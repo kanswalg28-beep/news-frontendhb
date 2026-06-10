@@ -29,6 +29,8 @@ interface CompanyDashboardProps {
   simulatedTime: Date;
   onStateChange: () => void;
   dbTrigger: number;
+  setActiveRole?: (role: 'Company' | 'Freelancer' | 'Client') => void;
+  setActiveClientProjectId?: (id: string) => void;
 }
 
 const calculateEstimatedCrewCost = (shoots: { date: string; crewSlots: { role: Specialization }[] }[]) => {
@@ -67,6 +69,8 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
   simulatedTime,
   onStateChange,
   dbTrigger,
+  setActiveRole,
+  setActiveClientProjectId,
 }) => {
 
   // Selected Freelancer for Profile Modal
@@ -76,7 +80,7 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
   const [isCompanyReviewsOpen, setIsCompanyReviewsOpen] = useState(false);
 
   // Active sub-tab state inside ERP
-  const [activeTab, setActiveTab] = useState<'projects' | 'allocation'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'allocation' | 'galleries'>('projects');
 
   // Selected Project for Editing
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -757,6 +761,216 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
     );
   };
 
+  // Render Galleries & Photo Management Hub Tab
+  const renderGalleriesDashboard = () => {
+    const totalGalleries = projectsList.length;
+    const connectedDriveCount = projectsList.filter(p => p.googleDriveLink).length;
+    const publishedCount = projectsList.filter(p => p.galleryPublished).length;
+    const scannedCount = projectsList.filter(p => p.facesScanned).length;
+    const albumSubmittedCount = projectsList.filter(p => p.albumSelectionSubmitted).length;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h2>📸 Client Galleries & Photo Sharing Hub</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Connect Google Drive folders, upload deliverables, trigger AI face scanning, and manage live couple portal links.
+            </p>
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              if (projectsList.length > 0) {
+                handleOpenManagePhotos(projectsList[0]);
+              } else {
+                alert('Please create a project first.');
+              }
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <span>➕</span> Connect New Gallery
+          </button>
+        </div>
+
+        {/* Stats Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+          <div className="card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)' }}>
+            <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '4px' }}>📂</span>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Galleries</div>
+            <strong style={{ fontSize: '1.4rem', color: 'var(--text-primary)' }}>{totalGalleries}</strong>
+          </div>
+          <div className="card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)' }}>
+            <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '4px' }}>🔗</span>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Drive Connected</div>
+            <strong style={{ fontSize: '1.4rem', color: 'var(--info)' }}>{connectedDriveCount} / {totalGalleries}</strong>
+          </div>
+          <div className="card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)' }}>
+            <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '4px' }}>⚡</span>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>AI Scans Complete</div>
+            <strong style={{ fontSize: '1.4rem', color: 'var(--primary-light)' }}>{scannedCount} / {totalGalleries}</strong>
+          </div>
+          <div className="card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)' }}>
+            <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '4px' }}>✨</span>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Galleries Published</div>
+            <strong style={{ fontSize: '1.4rem', color: 'var(--success)' }}>{publishedCount} / {totalGalleries}</strong>
+          </div>
+          <div className="card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)' }}>
+            <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '4px' }}>📖</span>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Albums Submitted</div>
+            <strong style={{ fontSize: '1.4rem', color: 'var(--warning)' }}>{albumSubmittedCount} / {totalGalleries}</strong>
+          </div>
+        </div>
+
+        {/* Galleries List */}
+        {projectsList.length === 0 ? (
+          <div className="empty-state card">
+            <span className="empty-state-icon">📸</span>
+            <h3>No Galleries to Manage</h3>
+            <p style={{ marginTop: '8px' }}>Create a project to connect a client photo gallery.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
+            {projectsList.map((proj: Project) => {
+              const photoCount = (proj.uploadedPhotos || []).length;
+              const mehCount = (proj.uploadedPhotos || []).filter(p => p.category === 'Mehendi').length;
+              const halCount = (proj.uploadedPhotos || []).filter(p => p.category === 'Haldi').length;
+              const wedCount = (proj.uploadedPhotos || []).filter(p => p.category === 'Wedding').length;
+              
+              const selectedCount = (proj.uploadedPhotos || []).filter(p => p.selectedForAlbum).length;
+
+              return (
+                <div key={proj.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', position: 'relative' }}>
+                  
+                  {/* Card Header */}
+                  <div style={{ borderBottom: '1px solid var(--bg-tertiary)', paddingBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)' }}>{proj.name}</h3>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Client Couple: <strong>{proj.clientName}</strong> &bull; {proj.clientPhone}
+                      </div>
+                    </div>
+                    
+                    <span 
+                      className={`badge ${proj.galleryPublished ? 'badge-confirmed' : 'badge-pending'}`} 
+                      style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+                    >
+                      {proj.galleryPublished ? '🟢 Live' : '🔴 Draft'}
+                    </span>
+                  </div>
+
+                  {/* Connection Details */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem' }}>
+                    
+                    {/* Google Drive Status */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>🔗 Google Drive:</span>
+                      {proj.googleDriveLink ? (
+                        <a 
+                          href={proj.googleDriveLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          style={{ color: 'var(--info)', fontWeight: 600, textDecoration: 'underline' }}
+                        >
+                          Connected Drive Folder
+                        </a>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>Disconnected</span>
+                      )}
+                    </div>
+
+                    {/* Photos Count */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>🖼️ Photos Uploaded:</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>
+                        {photoCount > 0 ? (
+                          `${photoCount} photos (${wedCount} Wed, ${halCount} Hal, ${mehCount} Meh)`
+                        ) : (
+                          'No photos'
+                        )}
+                      </strong>
+                    </div>
+
+                    {/* AI Face Scanning Status */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>👤 AI biometric Scan:</span>
+                      {proj.facesScanned ? (
+                        <span style={{ color: 'var(--success)', fontWeight: 600 }}>🟢 Scanned & Tagged</span>
+                      ) : (
+                        <span style={{ color: 'var(--warning)', fontWeight: 600 }}>⚠️ Not Scanned</span>
+                      )}
+                    </div>
+
+                    {/* Album Selection Status */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>📖 Album Print Selection:</span>
+                      {proj.albumSelectionSubmitted ? (
+                        <span style={{ color: 'var(--success)', fontWeight: 600 }}>
+                          ✅ Submitted ({selectedCount} photos favorited)
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>
+                          ⏳ Pending Client Selection {selectedCount > 0 ? `(${selectedCount} favorited)` : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions Grid */}
+                  <div style={{ borderTop: '1px solid var(--bg-tertiary)', paddingTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ fontSize: '0.8rem', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                      onClick={() => handleOpenManagePhotos(proj)}
+                    >
+                      📸 Manage Photos
+                    </button>
+
+                    {setActiveRole && setActiveClientProjectId && proj.galleryPublished ? (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.8rem', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', borderColor: 'var(--primary)' }}
+                        onClick={() => {
+                          setActiveClientProjectId(proj.id);
+                          setActiveRole('Client');
+                        }}
+                      >
+                        👁️ View Live Gallery
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.8rem', padding: '6px 12px', opacity: 0.5, cursor: 'not-allowed' }}
+                        disabled
+                        title="Publish gallery first to view"
+                      >
+                        👁️ Portal Unavailable
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Quick publish controls */}
+                  {!proj.galleryPublished && photoCount > 0 && (
+                    <button
+                      className="btn btn-primary"
+                      style={{ width: '100%', background: 'var(--success)', borderColor: 'var(--success)', fontSize: '0.8rem', padding: '6px 12px' }}
+                      onClick={() => {
+                        setPhotoManagingProject(proj);
+                        handlePublishGallery();
+                      }}
+                    >
+                      ✨ Publish Draft Gallery & Notify Couple
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Render Team Allocation Dashboard View
   const renderTeamAllocation = () => {
     return (
@@ -1316,6 +1530,14 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
           >
             👥 Team Allocation
           </button>
+          <button
+            type="button"
+            className={`role-tab ${activeTab === 'galleries' ? 'active' : ''}`}
+            onClick={() => setActiveTab('galleries')}
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+          >
+            📸 Galleries & Photos
+          </button>
         </div>
       )}
 
@@ -1323,8 +1545,10 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
         renderCreateProjectForm()
       ) : activeTab === 'projects' ? (
         renderProjectsDashboard()
-      ) : (
+      ) : activeTab === 'allocation' ? (
         renderTeamAllocation()
+      ) : (
+        renderGalleriesDashboard()
       )}
 
       {/* Photo Management Modal */}

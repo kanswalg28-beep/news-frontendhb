@@ -261,6 +261,8 @@ function App() {
             simulatedTime={simulatedTime}
             onStateChange={handleStateChange}
             dbTrigger={dbTrigger}
+            setActiveRole={setActiveRole}
+            setActiveClientProjectId={setActiveClientProjectId}
           />
         ) : activeRole === 'Freelancer' ? (
           <FreelancerDashboard
