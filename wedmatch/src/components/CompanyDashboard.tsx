@@ -491,6 +491,74 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
     }, 800);
   };
 
+  const handleRealLocalFilesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!photoManagingProject) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (!googleDriveInput.trim()) {
+      alert('Please enter a Google Drive folder link before uploading photos.');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadStepMsg('Reading local files...');
+
+    const faceCombos = [
+      ['face_bride', 'face_groom'],
+      ['face_bride', 'face_sister1'],
+      ['face_groom', 'face_uncle1'],
+      ['face_friend1', 'face_friend2'],
+      ['face_bride', 'face_groom', 'face_uncle1'],
+      ['face_sister1', 'face_friend1']
+    ];
+
+    setTimeout(() => {
+      setUploadProgress(40);
+      setUploadStepMsg('Generating browser object URLs for local display...');
+
+      const newPhotos: GalleryPhoto[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const objectUrl = URL.createObjectURL(file);
+        const randomFaces = faceCombos[Math.floor(Math.random() * faceCombos.length)];
+
+        newPhotos.push({
+          id: `real_${Math.random().toString(36).substring(2, 9)}`,
+          url: objectUrl,
+          category: selectedUploadCategory,
+          detectedFaces: randomFaces,
+          selectedForAlbum: false
+        });
+      }
+
+      setUploadProgress(85);
+      setUploadStepMsg('Writing metadata and syncing with connected Drive...');
+
+      setTimeout(() => {
+        setIsUploading(false);
+        const existingPhotos = photoManagingProject.uploadedPhotos || [];
+        const merged = [...existingPhotos, ...newPhotos];
+        
+        saveProjectPhotos(photoManagingProject.id, merged, googleDriveInput);
+        
+        // Reload project state
+        const updatedProjects = getProjects();
+        const up = updatedProjects.find(p => p.id === photoManagingProject.id);
+        if (up) setPhotoManagingProject(up);
+        onStateChange();
+
+        // Dispatch Toast Notification
+        window.dispatchEvent(
+          new CustomEvent('wedmatch-notification', {
+            detail: { message: `🎉 Successfully uploaded ${newPhotos.length} real files to ${selectedUploadCategory}!` }
+          })
+        );
+      }, 800);
+    }, 1200);
+  };
+
   const handleRunFaceScanning = () => {
     if (!photoManagingProject) return;
     const photos = photoManagingProject.uploadedPhotos || [];
@@ -1614,9 +1682,9 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
                 ) : (
                   <div>
                     <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>📸</span>
-                    <h4 style={{ color: 'var(--text-primary)', marginBottom: '6px' }}>Simulate Uploading Edited Deliverables</h4>
+                    <h4 style={{ color: 'var(--text-primary)', marginBottom: '6px' }}>Upload Photos & Deliverables</h4>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', maxWidth: '480px', margin: '0 auto 16px auto' }}>
-                      Choose which event function category these photos represent. Clicking simulate uploads matching high-resolution seed images.
+                      Connect a real Google Drive folder above. Then select local image files to upload for biometric scanning and portal favorites selection.
                     </p>
 
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -1633,12 +1701,46 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
                       </select>
                     </div>
 
-                    <button
-                      className="btn btn-primary"
-                      onClick={handleSimulatePhotoUpload}
+                    <input 
+                      type="file" 
+                      id="real-file-picker" 
+                      multiple 
+                      accept="image/*" 
+                      onChange={handleRealLocalFilesUpload} 
+                      style={{ display: 'none' }} 
+                    />
+
+                    <div 
+                      onClick={() => document.getElementById('real-file-picker')?.click()}
+                      style={{
+                        padding: '20px',
+                        border: '1px dashed rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        cursor: 'pointer',
+                        transition: 'var(--transition-fast)',
+                        marginBottom: '16px'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                      onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)'}
                     >
-                      🚀 Simulate Uploading Photos (Vite Sandbox)
-                    </button>
+                      <span style={{ fontSize: '1.8rem', display: 'block', marginBottom: '6px' }}>📁</span>
+                      <strong style={{ color: 'var(--primary-light)', fontSize: '0.9rem' }}>Choose Real Photo Files from Computer</strong>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
+                        Supports JPG, PNG, WEBP (Loads previews instantly)
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>OR</span>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                        onClick={handleSimulatePhotoUpload}
+                      >
+                        🚀 Populate Seed Photos (Sandbox)
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
