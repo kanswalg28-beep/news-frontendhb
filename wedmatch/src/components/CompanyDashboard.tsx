@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import type { User, Specialization, Project, ShootSchedule, Deliverable, DeliverableStatus, CrewSlot } from '../types';
+import type { User, Specialization, Project, ShootSchedule, Deliverable, DeliverableStatus, CrewSlot, GalleryPhoto } from '../types';
 import { 
   getAvailableFreelancers, 
   sendBookingRequest, 
@@ -16,7 +16,12 @@ import {
   getUsers,
   cancelBookingRequest,
   getSlotActiveRequest,
-  isSlotLocked
+  isSlotLocked,
+  UNSPLASH_PHOTO_POOL,
+  saveProjectPhotos,
+  publishProjectGallery,
+  runAiFaceScanning,
+  addNotificationLog
 } from '../db';
 
 interface CompanyDashboardProps {
@@ -116,6 +121,18 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
   const [clientPhoneInput, setClientPhoneInput] = useState('+91 ');
   const [projBilling, setProjBilling] = useState<number>(200000);
   const [projExpenses, setProjExpenses] = useState<number>(5000);
+
+  // Photo Sharing & AI face scanning states
+  const [photoManagingProject, setPhotoManagingProject] = useState<Project | null>(null);
+  const [googleDriveInput, setGoogleDriveInput] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStepMsg, setUploadStepMsg] = useState('');
+  const [selectedUploadCategory, setSelectedUploadCategory] = useState<'Mehendi' | 'Haldi' | 'Wedding'>('Wedding');
+  
+  const [isScanningFaces, setIsScanningFaces] = useState(false);
+  const [scanningProgress, setScanningProgress] = useState(0);
+  const [scanFaceCount, setScanFaceCount] = useState(0);
 
   // Dynamic shoots list in form
   const [formShoots, setFormShoots] = useState<{
@@ -405,6 +422,151 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
     );
   };
 
+  // Photo management handlers
+  const handleOpenManagePhotos = (proj: Project) => {
+    setPhotoManagingProject(proj);
+    setGoogleDriveInput(proj.googleDriveLink || '');
+  };
+
+  const handleSimulatePhotoUpload = () => {
+    if (!googleDriveInput.trim()) {
+      alert('Please enter a Google Drive folder link before uploading photos.');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadStepMsg('Authenticating Google Drive API...');
+
+    // Simulate upload sequence
+    const steps = [
+      { progress: 15, msg: 'Creating remote folder sync...' },
+      { progress: 40, msg: `Transferring high-res images to ${selectedUploadCategory} subfolder...` },
+      { progress: 75, msg: 'Saving file metadata and generating CDN URLs...' },
+      { progress: 100, msg: 'Photo upload completed successfully!' }
+    ];
+
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      if (currentStep < steps.length) {
+        setUploadProgress(steps[currentStep].progress);
+        setUploadStepMsg(steps[currentStep].msg);
+        currentStep++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsUploading(false);
+          if (photoManagingProject) {
+            // Get photos from UNSPLASH_PHOTO_POOL matching this category
+            const categoryPhotos = UNSPLASH_PHOTO_POOL.filter((p: GalleryPhoto) => p.category === selectedUploadCategory);
+            const existingPhotos = photoManagingProject.uploadedPhotos || [];
+            const newPhotos = categoryPhotos.map((p: GalleryPhoto) => ({
+              ...p,
+              id: `${p.id}_${Math.random().toString(36).substring(2, 6)}`,
+              selectedForAlbum: false
+            }));
+
+            const merged = [...existingPhotos, ...newPhotos];
+            saveProjectPhotos(photoManagingProject.id, merged, googleDriveInput);
+            
+            // Reload project state
+            const updatedProjects = getProjects();
+            const up = updatedProjects.find(p => p.id === photoManagingProject.id);
+            if (up) setPhotoManagingProject(up);
+            onStateChange();
+
+            // Dispatch Toast Notification
+            window.dispatchEvent(
+              new CustomEvent('wedmatch-notification', {
+                detail: { message: `🎉 Successfully uploaded ${newPhotos.length} photos to ${selectedUploadCategory}!` }
+              })
+            );
+          }
+        }, 600);
+      }
+    }, 800);
+  };
+
+  const handleRunFaceScanning = () => {
+    if (!photoManagingProject) return;
+    const photos = photoManagingProject.uploadedPhotos || [];
+    if (photos.length === 0) {
+      alert('Please upload photos before running AI face recognition.');
+      return;
+    }
+
+    setIsScanningFaces(true);
+    setScanningProgress(0);
+    setScanFaceCount(0);
+
+    // Simulate scanning images
+    const interval = setInterval(() => {
+      setScanningProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 8;
+      });
+      setScanFaceCount(prev => prev + Math.floor(Math.random() * 2));
+    }, 150);
+
+    setTimeout(() => {
+      setIsScanningFaces(false);
+      runAiFaceScanning(photoManagingProject.id);
+      
+      // Reload project state
+      const updatedProjects = getProjects();
+      const up = updatedProjects.find(p => p.id === photoManagingProject.id);
+      if (up) setPhotoManagingProject(up);
+      onStateChange();
+
+      // Dispatch Toast Notification
+      window.dispatchEvent(
+        new CustomEvent('wedmatch-notification', {
+          detail: { message: `⚡ AI Face Scan finished! Detected 6 unique family member/guest profiles.` }
+        })
+      );
+    }, 2200);
+  };
+
+  const handlePublishGallery = () => {
+    if (!photoManagingProject) return;
+    const photos = photoManagingProject.uploadedPhotos || [];
+    if (photos.length === 0) {
+      alert('Cannot publish an empty gallery. Please upload photos first.');
+      return;
+    }
+
+    publishProjectGallery(photoManagingProject.id);
+
+    // Simulate WhatsApp Notification log
+    const portalUrl = `${window.location.origin}/?role=Client&projectId=${photoManagingProject.id}`;
+    const message = `👋 Hello ${photoManagingProject.clientName}! Your wedding pictures are live on our premium client portal. Click the link to view, share with guests (using AI face search), and heart your favorites for the printed album! 🔗 View Gallery: ${portalUrl}`;
+
+    addNotificationLog({
+      recipientName: photoManagingProject.clientName,
+      type: 'WhatsApp',
+      message: `📲 WhatsApp Outgoing: ${message}`
+    });
+
+    // Reload project state
+    const updatedProjects = getProjects();
+    const up = updatedProjects.find(p => p.id === photoManagingProject.id);
+    if (up) setPhotoManagingProject(up);
+    onStateChange();
+
+    // Close photo manager modal
+    setPhotoManagingProject(null);
+
+    // Dispatch toast alert
+    window.dispatchEvent(
+      new CustomEvent('wedmatch-notification', {
+        detail: { message: `✨ Gallery published! WhatsApp notification sent to ${photoManagingProject.clientName}.` }
+      })
+    );
+  };
+
   // Render projects dashboard list
   const renderProjectsDashboard = () => {
     return (
@@ -454,6 +616,28 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {proj.galleryPublished && (
+                        <span className="badge badge-confirmed" style={{ fontSize: '0.7rem', padding: '3px 8px' }}>
+                          ✨ Gallery Live
+                        </span>
+                      )}
+                      {proj.googleDriveLink ? (
+                        <span className="badge badge-pending" style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'rgba(6, 182, 212, 0.15)', color: 'var(--info)', borderColor: 'var(--info-light)' }} title={proj.googleDriveLink}>
+                          🔗 Connected
+                        </span>
+                      ) : (
+                        <span className="badge badge-pending" style={{ fontSize: '0.7rem', padding: '3px 8px', background: 'transparent', color: 'var(--text-muted)' }}>
+                          🔗 Drive Off
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        style={{ padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', color: 'white' }}
+                        onClick={() => handleOpenManagePhotos(proj)}
+                      >
+                        📸 Manage Photos
+                      </button>
                       <button
                         type="button"
                         className="btn btn-secondary"
@@ -462,9 +646,6 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
                       >
                         ✏️ Edit Project
                       </button>
-                      <span className="badge badge-specialization" style={{ background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary-border)' }}>
-                        Active Project
-                      </span>
                     </div>
                   </div>
 
@@ -1144,6 +1325,204 @@ export const CompanyDashboard: React.FC<CompanyDashboardProps> = ({
         renderProjectsDashboard()
       ) : (
         renderTeamAllocation()
+      )}
+
+      {/* Photo Management Modal */}
+      {photoManagingProject && (
+        <div className="modal-overlay" onClick={() => setPhotoManagingProject(null)}>
+          <div className="modal-content" style={{ maxWidth: '850px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ position: 'sticky', top: 0, background: 'var(--bg-secondary)', zIndex: 10 }}>
+              <h2 style={{ fontFamily: 'var(--font-display)' }}>📸 Manage Photo Gallery & AI Scan</h2>
+              <button className="modal-close" onClick={() => setPhotoManagingProject(null)}>&times;</button>
+            </div>
+            
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px' }}>
+              
+              {/* Google Drive Connection Section */}
+              <div className="card" style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--card-border)', padding: '16px' }}>
+                <h3 style={{ fontSize: '1.05rem', color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>🔗</span> Connect Google Drive Assets
+                </h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '12px' }}>
+                  Link a Google Drive folder. Raw uploaded wedding images will sync into our system for AI face search and client album selection.
+                </p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="https://drive.google.com/drive/folders/..."
+                    value={googleDriveInput}
+                    onChange={(e) => setGoogleDriveInput(e.target.value)}
+                    style={{ flex: 1, fontSize: '0.85rem' }}
+                  />
+                  <button
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    onClick={() => setGoogleDriveInput(`https://drive.google.com/drive/folders/mock_${photoManagingProject.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`)}
+                  >
+                    Auto-Generate Link
+                  </button>
+                </div>
+              </div>
+
+              {/* Photo Uploader Section */}
+              <div 
+                style={{ 
+                  background: 'rgba(15, 23, 42, 0.3)', 
+                  border: '2px dashed var(--card-border)', 
+                  borderRadius: '12px',
+                  padding: '24px',
+                  textAlign: 'center',
+                  position: 'relative'
+                }}
+              >
+                {isUploading ? (
+                  <div style={{ padding: '10px 0' }}>
+                    <div style={{ fontSize: '1.8rem', marginBottom: '8px' }}>📤</div>
+                    <div style={{ color: 'var(--primary-light)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '4px' }}>
+                      {uploadStepMsg}
+                    </div>
+                    <div className="progress-bar-bg" style={{ height: '8px', borderRadius: '4px', background: 'var(--bg-tertiary)', overflow: 'hidden', maxWidth: '300px', margin: '12px auto 6px auto' }}>
+                      <div className="progress-bar-fill" style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.3s ease' }} />
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{uploadProgress}% Uploaded</span>
+                  </div>
+                ) : (
+                  <div>
+                    <span style={{ fontSize: '2rem', display: 'block', marginBottom: '8px' }}>📸</span>
+                    <h4 style={{ color: 'var(--text-primary)', marginBottom: '6px' }}>Simulate Uploading Edited Deliverables</h4>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', maxWidth: '480px', margin: '0 auto 16px auto' }}>
+                      Choose which event function category these photos represent. Clicking simulate uploads matching high-resolution seed images.
+                    </p>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Function Category:</span>
+                      <select
+                        className="input-field"
+                        style={{ width: '150px', padding: '6px 10px', fontSize: '0.8rem' }}
+                        value={selectedUploadCategory}
+                        onChange={(e) => setSelectedUploadCategory(e.target.value as any)}
+                      >
+                        <option value="Mehendi">Mehendi</option>
+                        <option value="Haldi">Haldi</option>
+                        <option value="Wedding">Wedding</option>
+                      </select>
+                    </div>
+
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSimulatePhotoUpload}
+                    >
+                      🚀 Simulate Uploading Photos (Vite Sandbox)
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Real-time scanning animation overlay */}
+              {isScanningFaces && (
+                <div 
+                  style={{
+                    background: 'rgba(9, 13, 20, 0.9)',
+                    border: '1px solid var(--info)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    textAlign: 'center',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div 
+                    style={{ 
+                      position: 'absolute', 
+                      top: 0, 
+                      left: 0, 
+                      width: '100%', 
+                      height: '4px', 
+                      background: '#06b6d4',
+                      boxShadow: '0 0 10px #06b6d4', 
+                      animation: 'scan-laser 2s infinite ease-in-out' 
+                    }}
+                  />
+                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🤖</div>
+                  <h4 style={{ color: 'var(--info)', marginBottom: '4px' }}>AI Biometric Facial Recognition Scanning...</h4>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '12px' }}>
+                    Mapping facial structures & tagging guest profiles across {(photoManagingProject.uploadedPhotos || []).length} photos...
+                  </p>
+                  <div className="progress-bar-bg" style={{ height: '6px', borderRadius: '3px', background: 'var(--bg-tertiary)', overflow: 'hidden', maxWidth: '360px', margin: '0 auto 6px auto' }}>
+                    <div className="progress-bar-fill" style={{ width: `${scanningProgress}%`, height: '100%', background: 'var(--info)', transition: 'width 0.1s ease' }} />
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Progress: {scanningProgress}% &bull; Matches Detected: {scanFaceCount}
+                  </div>
+                </div>
+              )}
+
+              {/* Uploaded Gallery Grid */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h4 style={{ color: 'var(--text-primary)', margin: 0 }}>
+                    Uploaded Photos ({(photoManagingProject.uploadedPhotos || []).length})
+                  </h4>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {photoManagingProject.facesScanned ? (
+                      <span className="badge badge-confirmed" style={{ fontSize: '0.75rem' }}>
+                        ⚡ AI Scan Complete
+                      </span>
+                    ) : (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.75rem', padding: '4px 10px', borderColor: 'var(--info)', color: 'var(--info)' }}
+                        onClick={handleRunFaceScanning}
+                        disabled={isScanningFaces || (photoManagingProject.uploadedPhotos || []).length === 0}
+                      >
+                        ⚡ Run AI Face Scanning
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {(photoManagingProject.uploadedPhotos || []).length === 0 ? (
+                  <div style={{ padding: '30px 10px', textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px dashed var(--card-border)' }}>
+                    No photos uploaded yet. Link Drive and upload simulated photos above.
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px', maxHeight: '240px', overflowY: 'auto', padding: '4px' }}>
+                    {(photoManagingProject.uploadedPhotos || []).map((photo, i) => (
+                      <div key={i} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--card-border)', height: '90px' }}>
+                        <img src={photo.url} alt="Uploaded" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <span style={{ position: 'absolute', bottom: '4px', left: '4px', fontSize: '0.6rem', padding: '1px 4px', background: 'rgba(0,0,0,0.7)', color: '#fff', borderRadius: '3px' }}>
+                          {photo.category}
+                        </span>
+                        {photo.detectedFaces && photo.detectedFaces.length > 0 && photoManagingProject.facesScanned && (
+                          <span style={{ position: 'absolute', top: '4px', right: '4px', fontSize: '0.6rem', padding: '1px 4px', background: 'rgba(6, 182, 212, 0.8)', color: '#fff', borderRadius: '3px' }} title="Faces Scanned">
+                            👤 {photo.detectedFaces.length}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            <div className="modal-footer" style={{ position: 'sticky', bottom: 0, background: 'var(--bg-secondary)', zIndex: 10, display: 'flex', justifyContent: 'space-between', padding: '16px 20px', borderTop: '1px solid var(--card-border)' }}>
+              <button className="btn btn-secondary" onClick={() => setPhotoManagingProject(null)}>
+                Cancel
+              </button>
+
+              <button
+                className="btn btn-primary"
+                onClick={handlePublishGallery}
+                disabled={(photoManagingProject.uploadedPhotos || []).length === 0}
+                style={{ background: 'var(--success)', borderColor: 'var(--success)' }}
+              >
+                ✨ Publish Client Portal Gallery
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Freelancer Profile Modal */}

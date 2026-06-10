@@ -1,4 +1,4 @@
-export type UserRole = 'Company' | 'Freelancer';
+export type UserRole = 'Company' | 'Freelancer' | 'Client';
 
 export type Specialization = 'Photographer' | 'Videographer' | 'Cinematographer' | 'Candid';
 
@@ -74,6 +74,14 @@ export interface CalendarBlock {
 export type ProjectStatus = 'Enquiry' | 'Active' | 'Completed' | 'Archived';
 export type DeliverableStatus = 'Pending' | 'In Progress' | 'Review' | 'Delivered';
 
+export interface GalleryPhoto {
+  id: string;
+  url: string;
+  category: 'Mehendi' | 'Haldi' | 'Wedding';
+  selectedForAlbum?: boolean;
+  detectedFaces?: string[]; // Array of tagged face IDs
+}
+
 export interface Project {
   id: string;
   companyId: string;
@@ -84,6 +92,11 @@ export interface Project {
   billingAmount: number;
   extraExpenses: number;
   createdAt: string;
+  googleDriveLink?: string;
+  galleryPublished?: boolean;
+  uploadedPhotos?: GalleryPhoto[];
+  albumSelectionSubmitted?: boolean;
+  facesScanned?: boolean;
 }
 
 export interface CrewSlot {

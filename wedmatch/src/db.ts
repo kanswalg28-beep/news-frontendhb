@@ -490,7 +490,73 @@ const SEED_REQUESTS: BookingRequest[] = [
   }
 ];
 
-import type { Project, ShootSchedule, Deliverable, DeliverableStatus } from './types';
+import type { Project, ShootSchedule, Deliverable, DeliverableStatus, GalleryPhoto } from './types';
+
+export const UNSPLASH_PHOTO_POOL: GalleryPhoto[] = [
+  // Mehendi
+  {
+    id: 'photo_meh_1',
+    url: 'https://images.unsplash.com/photo-1610030469668-93535c17b6b3?w=800&auto=format&fit=crop&q=80',
+    category: 'Mehendi',
+    detectedFaces: ['face_bride', 'face_sister1']
+  },
+  {
+    id: 'photo_meh_2',
+    url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80',
+    category: 'Mehendi',
+    detectedFaces: ['face_bride', 'face_groom', 'face_friend1']
+  },
+  {
+    id: 'photo_meh_3',
+    url: 'https://images.unsplash.com/photo-1604017011826-d3b4c23f8914?w=800&auto=format&fit=crop&q=80',
+    category: 'Mehendi',
+    detectedFaces: ['face_groom', 'face_friend2']
+  },
+  // Haldi
+  {
+    id: 'photo_hal_1',
+    url: 'https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?w=800&auto=format&fit=crop&q=80',
+    category: 'Haldi',
+    detectedFaces: ['face_bride', 'face_uncle1']
+  },
+  {
+    id: 'photo_hal_2',
+    url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop&q=80',
+    category: 'Haldi',
+    detectedFaces: ['face_bride', 'face_groom', 'face_sister1']
+  },
+  {
+    id: 'photo_hal_3',
+    url: 'https://images.unsplash.com/photo-1611106211090-8f3c79eb8552?w=800&auto=format&fit=crop&q=80',
+    category: 'Haldi',
+    detectedFaces: ['face_groom', 'face_uncle1']
+  },
+  // Wedding
+  {
+    id: 'photo_wed_1',
+    url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop&q=80',
+    category: 'Wedding',
+    detectedFaces: ['face_bride', 'face_groom']
+  },
+  {
+    id: 'photo_wed_2',
+    url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80',
+    category: 'Wedding',
+    detectedFaces: ['face_bride', 'face_sister1', 'face_friend1']
+  },
+  {
+    id: 'photo_wed_3',
+    url: 'https://images.unsplash.com/photo-1583939411023-14785f74ff08?w=800&auto=format&fit=crop&q=80',
+    category: 'Wedding',
+    detectedFaces: ['face_groom', 'face_friend2', 'face_uncle1']
+  },
+  {
+    id: 'photo_wed_4',
+    url: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=800&auto=format&fit=crop&q=80',
+    category: 'Wedding',
+    detectedFaces: ['face_bride', 'face_groom', 'face_uncle1']
+  }
+];
 
 const SEED_PROJECTS: Project[] = [
   {
@@ -502,7 +568,12 @@ const SEED_PROJECTS: Project[] = [
     status: 'Active',
     billingAmount: 200000,
     extraExpenses: 5000,
-    createdAt: '2026-06-01T10:00:00.000Z'
+    createdAt: '2026-06-01T10:00:00.000Z',
+    googleDriveLink: '',
+    galleryPublished: false,
+    uploadedPhotos: [],
+    albumSelectionSubmitted: false,
+    facesScanned: false
   },
   {
     id: 'proj2',
@@ -513,7 +584,12 @@ const SEED_PROJECTS: Project[] = [
     status: 'Active',
     billingAmount: 200000,
     extraExpenses: 5000,
-    createdAt: '2026-06-03T11:00:00.000Z'
+    createdAt: '2026-06-03T11:00:00.000Z',
+    googleDriveLink: 'https://drive.google.com/drive/folders/mock_malhotra_sen_wedding_2026',
+    galleryPublished: true,
+    uploadedPhotos: UNSPLASH_PHOTO_POOL.slice(0, 8).map(p => ({ ...p, selectedForAlbum: false })),
+    albumSelectionSubmitted: false,
+    facesScanned: true
   }
 ];
 
@@ -638,7 +714,7 @@ const STORAGE_KEYS = {
 };
 
 export function initDatabase(): void {
-  const DB_VERSION = 'v4_deliverables_cost';
+  const DB_VERSION = 'v5_photo_sharing';
   const currentVersion = localStorage.getItem('wedmatch_db_version');
 
   if (currentVersion !== DB_VERSION) {
@@ -684,7 +760,7 @@ export function initDatabase(): void {
 
 // Reset data
 export function resetDatabase(): void {
-  localStorage.setItem('wedmatch_db_version', 'v4_deliverables_cost');
+  localStorage.setItem('wedmatch_db_version', 'v5_photo_sharing');
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(SEED_USERS));
   localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(SEED_REQUESTS));
   localStorage.setItem(STORAGE_KEYS.BLOCKS, JSON.stringify(SEED_BLOCKS));
@@ -1484,7 +1560,6 @@ export function allocateFreelancer(shootId: string, slotId: string, freelancerId
     }
   }
 }
-
 export function getFreelancerAllocations(freelancerId: string): (ShootSchedule & { projectName: string; clientName: string; clientPhone: string; roleNeeded: Specialization; slotId: string })[] {
   const allShoots = getShootSchedules();
   const projects = getProjects();
@@ -1510,3 +1585,54 @@ export function getFreelancerAllocations(freelancerId: string): (ShootSchedule &
   return allocations;
 }
 
+export function saveProjectPhotos(projectId: string, photos: GalleryPhoto[], driveLink: string): void {
+  const projects = getProjects();
+  const index = projects.findIndex(p => p.id === projectId);
+  if (index !== -1) {
+    projects[index].uploadedPhotos = photos;
+    projects[index].googleDriveLink = driveLink;
+    saveProjects(projects);
+  }
+}
+
+export function publishProjectGallery(projectId: string): void {
+  const projects = getProjects();
+  const index = projects.findIndex(p => p.id === projectId);
+  if (index !== -1) {
+    projects[index].galleryPublished = true;
+    saveProjects(projects);
+  }
+}
+
+export function submitAlbumSelection(projectId: string, selectedPhotoIds: string[]): void {
+  const projects = getProjects();
+  const index = projects.findIndex(p => p.id === projectId);
+  if (index !== -1) {
+    const project = projects[index];
+    project.albumSelectionSubmitted = true;
+    if (project.uploadedPhotos) {
+      project.uploadedPhotos = project.uploadedPhotos.map(p => ({
+        ...p,
+        selectedForAlbum: selectedPhotoIds.includes(p.id)
+      }));
+    }
+    saveProjects(projects);
+
+    // Sync back to deliverables: change Premium Album status to 'Review'
+    const deliverables = getDeliverables();
+    const albumDelivIdx = deliverables.findIndex(d => d.projectId === projectId && d.name.toLowerCase().includes('album'));
+    if (albumDelivIdx !== -1) {
+      deliverables[albumDelivIdx].status = 'Review';
+      saveDeliverables(deliverables);
+    }
+  }
+}
+
+export function runAiFaceScanning(projectId: string): void {
+  const projects = getProjects();
+  const index = projects.findIndex(p => p.id === projectId);
+  if (index !== -1) {
+    projects[index].facesScanned = true;
+    saveProjects(projects);
+  }
+}

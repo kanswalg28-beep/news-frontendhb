@@ -1,10 +1,10 @@
 import React from 'react';
-import type { User, BookingRequest } from '../types';
+import type { User, BookingRequest, Project } from '../types';
 
 interface SimulationControlsProps {
   simulatedTime: Date;
-  activeRole: 'Company' | 'Freelancer';
-  setActiveRole: (role: 'Company' | 'Freelancer') => void;
+  activeRole: 'Company' | 'Freelancer' | 'Client';
+  setActiveRole: (role: 'Company' | 'Freelancer' | 'Client') => void;
   onAdvanceTime: (days: number) => void;
   onResetDb: () => void;
   activeRequests?: BookingRequest[];
@@ -12,6 +12,9 @@ interface SimulationControlsProps {
   activeFreelancer: User;
   onFreelancerChange: (id: string) => void;
   onCancelRequest?: (requestId: string) => void;
+  projects?: Project[];
+  activeClientProjectId?: string;
+  setActiveClientProjectId?: (id: string) => void;
 }
 
 export const SimulationControls: React.FC<SimulationControlsProps> = ({
@@ -25,6 +28,9 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
   activeFreelancer,
   onFreelancerChange,
   onCancelRequest,
+  projects,
+  activeClientProjectId,
+  setActiveClientProjectId,
 }) => {
     // Format simulated date nicely
     const formatDate = (date: Date) => {
@@ -151,7 +157,7 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
             </button>
           </div>
   
-          <div className="role-switcher-tabs" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="role-switcher-tabs" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <button
               className={`role-tab ${activeRole === 'Company' ? 'active' : ''}`}
               onClick={() => setActiveRole('Company')}
@@ -183,6 +189,35 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
                 >
                   {freelancers.map(f => (
                     <option key={f.id} value={f.id}>{f.name} ({f.specialization})</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                className={`role-tab ${activeRole === 'Client' ? 'active' : ''}`}
+                onClick={() => setActiveRole('Client')}
+              >
+                Client View
+              </button>
+              {activeRole === 'Client' && projects && activeClientProjectId && setActiveClientProjectId && (
+                <select
+                  className="input-field"
+                  style={{ 
+                    width: '180px', 
+                    padding: '6px 10px', 
+                    fontSize: '0.8rem', 
+                    background: 'var(--bg-primary)', 
+                    border: '1px solid var(--card-border)', 
+                    borderRadius: '8px',
+                    color: 'var(--text-primary)',
+                    fontWeight: '600'
+                  }}
+                  value={activeClientProjectId}
+                  onChange={(e) => setActiveClientProjectId(e.target.value)}
+                >
+                  {projects.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
               )}

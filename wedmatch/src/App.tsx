@@ -8,11 +8,13 @@ import {
   checkExpiration, 
   getUsers,
   getNotificationLogs,
-  cancelBookingRequest
+  cancelBookingRequest,
+  getProjects
 } from './db';
 import { SimulationControls } from './components/SimulationControls';
 import { CompanyDashboard } from './components/CompanyDashboard';
 import { FreelancerDashboard } from './components/FreelancerDashboard';
+import { ClientPortal } from './components/ClientPortal';
 
 interface Toast {
   id: string;
@@ -20,17 +22,29 @@ interface Toast {
 }
 
 function App() {
-  // Initialize DB once on start
-  useEffect(() => {
-    initDatabase();
-  }, []);
-
-  const [activeRole, setActiveRole] = useState<'Company' | 'Freelancer'>('Company');
+  const [activeRole, setActiveRole] = useState<'Company' | 'Freelancer' | 'Client'>('Company');
+  const [activeClientProjectId, setActiveClientProjectId] = useState<string>('proj2');
   const [simulatedTime, setSimulatedTime] = useState<Date>(() => getSimulatedTime());
   const [dbTrigger, setDbTrigger] = useState(0);
   const [activeFreelancerId, setActiveFreelancerId] = useState<string>('f1');
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
+
+  // Initialize DB once on start and parse deep link URLs
+  useEffect(() => {
+    initDatabase();
+    
+    const params = new URLSearchParams(window.location.search);
+    const role = params.get('role');
+    const projectId = params.get('projectId');
+    
+    if (role === 'Client' && projectId) {
+      setActiveRole('Client');
+      setActiveClientProjectId(projectId);
+      // Clean query string without reloading the page
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   // Trigger state refresh
   const handleStateChange = useCallback(() => {
@@ -58,6 +72,14 @@ function App() {
   const currentFreelancer = useMemo(() => {
     return users.find((u) => u.id === activeFreelancerId) || { id: 'f1', name: 'Amit Sharma', role: 'Freelancer' as const, email: 'amit@gmail.com' };
   }, [users, activeFreelancerId]);
+
+  const clientNameDisplay = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    dbTrigger;
+    const projs = getProjects();
+    const activeProj = projs.find(p => p.id === activeClientProjectId);
+    return activeProj ? activeProj.clientName : 'Client';
+  }, [activeClientProjectId, dbTrigger]);
 
   // Find active booking requests for company (if any)
   const activeRequests = useMemo(() => {
@@ -135,6 +157,44 @@ function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const renderLogMessage = (msg: string) => {
+    const clientLinkRegex = /(https?:\/\/[^\s]+)\?role=Client&projectId=([a-zA-Z0-9_]+)/;
+    const match = msg.match(clientLinkRegex);
+    if (match) {
+      const url = match[0];
+      const projectId = match[2];
+      const parts = msg.split(url);
+      return (
+        <>
+          {parts[0]}
+          <button 
+            style={{ 
+              background: 'rgba(99, 102, 241, 0.25)', 
+              border: '1px solid var(--primary)', 
+              borderRadius: '4px', 
+              color: 'var(--primary-light)', 
+              padding: '2px 8px', 
+              fontSize: '0.75rem', 
+              cursor: 'pointer',
+              fontWeight: 600,
+              margin: '0 4px',
+              fontFamily: 'var(--font-mono)'
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveRole('Client');
+              setActiveClientProjectId(projectId);
+            }}
+          >
+            🔗 Open Client Portal
+          </button>
+          {parts[1]}
+        </>
+      );
+    }
+    return msg;
+  };
+
   return (
     <div className="app-container">
       {/* Toast Notification Container */}
@@ -163,10 +223,14 @@ function App() {
           <div style={{ textAlign: 'right', fontSize: '0.8rem' }}>
             <div style={{ color: 'var(--text-muted)' }}>Logged in as:</div>
             <strong style={{ color: 'var(--primary)' }}>
-              {activeRole === 'Company' ? currentCompany.name : currentFreelancer.name}
+              {activeRole === 'Company' 
+                ? currentCompany.name 
+                : activeRole === 'Freelancer' 
+                  ? currentFreelancer.name 
+                  : clientNameDisplay}
             </strong>
             <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-              ({activeRole === 'Company' ? 'Studio' : 'Freelancer'})
+              ({activeRole === 'Company' ? 'Studio' : activeRole === 'Freelancer' ? 'Freelancer' : 'Client Couple'})
             </span>
           </div>
         </div>
@@ -184,6 +248,9 @@ function App() {
         activeFreelancer={currentFreelancer}
         onFreelancerChange={setActiveFreelancerId}
         onCancelRequest={handleCancelRequest}
+        projects={getProjects()}
+        activeClientProjectId={activeClientProjectId}
+        setActiveClientProjectId={setActiveClientProjectId}
       />
 
       {/* Main Content Area */}
@@ -195,12 +262,17 @@ function App() {
             onStateChange={handleStateChange}
             dbTrigger={dbTrigger}
           />
-        ) : (
+        ) : activeRole === 'Freelancer' ? (
           <FreelancerDashboard
             currentFreelancer={currentFreelancer}
             simulatedTime={simulatedTime}
             onStateChange={handleStateChange}
             dbTrigger={dbTrigger}
+          />
+        ) : (
+          <ClientPortal
+            projectId={activeClientProjectId}
+            onStateChange={handleStateChange}
           />
         )}
       </main>
@@ -226,7 +298,7 @@ function App() {
               <div key={log.id} className="log-entry">
                 <span className="log-time">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
                 <span className={log.type === 'WhatsApp' ? 'log-wa' : 'log-email'}>
-                  {log.message}
+                  {renderLogMessage(log.message)}
                 </span>
               </div>
             ))
