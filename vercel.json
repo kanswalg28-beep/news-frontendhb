@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/honestly-biased-feed", "destination": "/api/honestly-biased-feed.js" },
-    { "source": "/api/admin/articles", "destination": "/api/admin/articles.js" }
+    { "source": "/api/admin/articles", "destination": "/api/admin/articles.js" },
+    { "source": "/admin", "destination": "/admin.html" }
   ]
 }
