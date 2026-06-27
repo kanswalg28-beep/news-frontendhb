@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node mock-server.js",
     "dev": "node mock-server.js"

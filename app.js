@@ -811,6 +811,35 @@ document.addEventListener('DOMContentLoaded', () => {
         // Refresh icons and play logic binding
         lucide.createIcons();
         bindDynamicEvents();
+
+        // Re-bind scroll-reveal observer: dynamically rendered bento cards start
+        // with opacity:0; transform:translateY(30px) inline so they animate in.
+        // Without re-observing them they would never reveal on reload when the
+        // grid is rebuilt from the API response.
+        const freshCards = gridContainer.querySelectorAll('.bento-card');
+        freshCards.forEach(card => {
+            // skip ones the static observer already captured
+            if (!card.classList.contains('reveal-attached')) {
+                card.classList.add('reveal-attached');
+                card.style.transition = card.style.transition ||
+                    'opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                bentoObserver.observe(card);
+            }
+        });
+
+        // Safety net: if any card is still invisible after 1.5s (e.g. user has
+        // reduced motion or the observer never fired because the card was rendered
+        // already in-view but the entry was missed), reveal them. Prevents
+        // reload returning a "clear space" if the network call landed
+        // after the IntersectionObserver attached only to the static markup.
+        setTimeout(() => {
+            freshCards.forEach(card => {
+                if (getComputedStyle(card).opacity === '0') {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        }, 1500);
     }
 
     // Region Tabs Event Listeners (Triggers Hash Change to route through SPA)
