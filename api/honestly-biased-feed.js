@@ -1,6 +1,4 @@
-const fetch = require('node-fetch');
 const { supabase } = require('../db/client');
-const path = require('path');
 
 // Reuse helper functions from original mock-server (you may extract them to a shared module)
 const CACHE_EXPIRY_MS = 12 * 60 * 60 * 1000; // 12 hours

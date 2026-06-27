@@ -1,13 +1,20 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Supabase credentials should be set in Vercel environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY; // or service_role key for privileged writes
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Supabase environment variables not set. Supabase client will not be initialized.');
+let supabase = null;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.warn(
+    '[supabase] SUPABASE_URL / SUPABASE_*_KEY env vars are not set. ' +
+      'Set them in Vercel project settings. Client left as null.'
+  );
+} else {
+  supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false },
+  });
 }
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 module.exports = { supabase };
