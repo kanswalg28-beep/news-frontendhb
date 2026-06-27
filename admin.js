@@ -44,7 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCMSData() {
         console.log("📡 Fetching CMS articles for hydration...");
         try {
-            const response = await fetch('/api/admin/articles?_t=' + Date.now());
+            const controller = ('AbortController' in window) ? new AbortController() : null;
+            const timeoutMs = 8000;
+            const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+            const fetchInit = controller ? { signal: controller.signal } : {};
+            const response = await fetch('/api/admin/articles?_t=' + Date.now(), fetchInit);
+            if (timeoutId) clearTimeout(timeoutId);
             if (response.ok) {
                 const data = await response.json();
                 allArticles = Array.isArray(data) ? data : [];
