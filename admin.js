@@ -37,19 +37,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const subCountBadge = document.getElementById('sub-count-badge');
     const btnExportSubscribers = document.getElementById('btn-export-subscribers');
 
-    // Load initial feed cache from Express API
+    // Load initial CMS data. The dedicated /api/admin/articles endpoint is
+    // fast because it just reads from the database (no GNews burst). The
+    // homepage feed endpoint can take ~17s on cold start while it refills
+    // GNews cache, so we never use it for hydration.
     async function loadCMSData() {
-        console.log("📡 Fetching feed database cache for CMS hydration...");
+        console.log("📡 Fetching CMS articles for hydration...");
         try {
-            const response = await fetch('/api/honestly-biased-feed');
+            const response = await fetch('/api/admin/articles');
             if (response.ok) {
                 const data = await response.json();
-                allArticles = data.articles || [];
-                
+                allArticles = Array.isArray(data) ? data : [];
+
                 updateStatsMetrics();
                 populateManagerList();
             } else {
-                console.error("Failed to load feed cache:", response.status);
+                console.error("Failed to load CMS articles:", response.status);
             }
         } catch (error) {
             console.error("CMS could not connect to server:", error);
