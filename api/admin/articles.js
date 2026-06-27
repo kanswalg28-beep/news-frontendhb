@@ -50,22 +50,35 @@ module.exports = async (req, res) => {
           hour12: true,
         }) + ' IST'
       };
-      const { data, error } = await supabase.from('articles').insert(payload);
+      const { data, error } = await supabase
+        .from('articles')
+        .insert(payload)
+        .select()
+        .single();
       if (error) throw error;
-      return res.status(201).json(data[0]);
+      return res.status(201).json(data);
     }
 
     if (method === 'PUT' && articleId) {
       // Update existing article
-      const { data, error } = await supabase.from('articles').update(body).eq('id', articleId);
+      const { data, error } = await supabase
+        .from('articles')
+        .update(body)
+        .eq('id', articleId)
+        .select()
+        .single();
       if (error) throw error;
-      return res.json(data[0]);
+      return res.json(data);
     }
 
     if (method === 'DELETE' && articleId) {
-      const { data, error } = await supabase.from('articles').delete().eq('id', articleId);
+      const { data, error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', articleId)
+        .select();
       if (error) throw error;
-      return res.json({ success: true, deletedId: articleId });
+      return res.json({ success: true, deletedId: articleId, deleted: data });
     }
 
     // Unsupported method/path
