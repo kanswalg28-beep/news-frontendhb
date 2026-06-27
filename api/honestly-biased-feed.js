@@ -92,27 +92,27 @@ async function fetchAndAuditGNews() {
       };
       const aiOutput = {
         category: tempArticle.category,
-        aiHeadline: tempArticle.title,
-        aiSummary: tempArticle.rawContent,
-        biasAudit: "",
-        fullBlog: "",
+        aiheadline: tempArticle.title,
+        aisummary: tempArticle.rawContent,
+        biasaudit: "",
+        fullblog: "",
         region: classifyRegion(raw.title, raw.description, raw.description, raw.source?.name, raw.url)
       };
       updated.push({
         id: `gnews_${aiOutput.region}_${i + 1}`,
         category: aiOutput.category,
         region: aiOutput.region,
-        aiHeadline: aiOutput.aiHeadline,
-        aiSummary: aiOutput.aiSummary,
-        biasAudit: aiOutput.biasAudit,
-        fullBlog: aiOutput.fullBlog,
-        originalSource: tempArticle.source,
-        originalTitle: raw.title,
-        timeAgo: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST',
+        aiheadline: aiOutput.aiheadline,
+        aisummary: aiOutput.aisummary,
+        biasaudit: aiOutput.biasaudit,
+        fullblog: aiOutput.fullblog,
+        originalsource: tempArticle.source,
+        originaltitle: raw.title,
+        timeago: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST',
         author: "Honestly Biased AI Engine (Mock)",
-        authorType: "ai",
-        imageUrl: raw.image || "./assets/hero-bg.png",
-        originalUrl: raw.url || "#"
+        authortype: "ai",
+        imageurl: raw.image || "./assets/hero-bg.png",
+        originalurl: raw.url || "#"
       });
     }
     cache.lastUpdated = now;

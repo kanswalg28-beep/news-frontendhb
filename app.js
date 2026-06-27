@@ -352,8 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Store dynamic articles globally and clean headlines from "Refracted: " prefix
             allArticles = (data.articles || []).map(art => {
-                if (art.aiHeadline) {
-                    art.aiHeadline = art.aiHeadline.replace(/^Refracted:\s*/i, '');
+                if (art.aiheadline) {
+                    art.aiheadline = art.aiheadline.replace(/^Refracted:\s*/i, '');
                 }
                 return art;
             });
@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let highlightsToRender = data.highlights || [];
             if (highlightsToRender.length === 0 && allArticles.length > 0) {
                 // Automatically fall back to top 4 article headlines if highlights list is empty
-                highlightsToRender = allArticles.slice(0, 4).map(a => a.aiHeadline);
+                highlightsToRender = allArticles.slice(0, 4).map(a => a.aiheadline);
             }
             if (highlightsToRender.length > 0) {
                 const tickerTrack = document.querySelector('.ticker-track');
@@ -422,107 +422,107 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     id: "gnews_1",
                     category: "Finance",
-                    aiHeadline: "FinMin Confirms New Tax Framework Remains Perfectly Logical to Precisely Three Statisticians",
-                    aiSummary: "The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.",
-                    biasAudit: "Ministers frame procedural hurdles as 'efficiency improvements' to mask standard operational overhead.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "FIFA World Cup 2026 opening ceremony Highlights",
-                    timeAgo: "12:25 am IST",
+                    aiheadline: "FinMin Confirms New Tax Framework Remains Perfectly Logical to Precisely Three Statisticians",
+                    aisummary: "The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.",
+                    biasaudit: "Ministers frame procedural hurdles as 'efficiency improvements' to mask standard operational overhead.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "FIFA World Cup 2026 opening ceremony Highlights",
+                    timeago: "12:25 am IST",
                     author: "Honestly Biased AI Engine (Gemini)",
-                    authorType: "ai",
-                    imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
-                    originalUrl: "#",
-                    fullBlog: `<p>The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.</p><p>Critics point out that this effectively locks out average taxpayers from filing independently, forcing them into paid private software ecosystems.</p>`
+                    authortype: "ai",
+                    imageurl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
+                    originalurl: "#",
+                    fullblog: `<p>The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.</p><p>Critics point out that this effectively locks out average taxpayers from filing independently, forcing them into paid private software ecosystems.</p>`
                 },
                 {
                     id: "gnews_2",
                     category: "Tech",
-                    aiHeadline: "Consent Under the Microscope: Startup Panic Climbs Over DPDP Compliance Hurdles",
-                    aiSummary: "Tech startups are suddenly discovering that acquiring 'explicit user consent' is a massive operational headache when they actually have to disclose their backend monetisation pipelines. The Bangalore tech hub is scrambling for regulatory loopholes.",
-                    biasAudit: "Corporate platforms frame user privacy compliance as an 'innovation tax' to protect high-margin ad trackers.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "Startup Compliance Hurdles",
-                    timeAgo: "12:13 am IST",
+                    aiheadline: "Consent Under the Microscope: Startup Panic Climbs Over DPDP Compliance Hurdles",
+                    aisummary: "Tech startups are suddenly discovering that acquiring 'explicit user consent' is a massive operational headache when they actually have to disclose their backend monetisation pipelines. The Bangalore tech hub is scrambling for regulatory loopholes.",
+                    biasaudit: "Corporate platforms frame user privacy compliance as an 'innovation tax' to protect high-margin ad trackers.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "Startup Compliance Hurdles",
+                    timeago: "12:13 am IST",
                     author: "Honestly Biased AI Engine (Gemini)",
-                    authorType: "ai",
-                    imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
-                    originalUrl: "#",
-                    fullBlog: `<p>Tech startups are suddenly discovering that acquiring 'explicit user consent' is a massive operational headache when they actually have to disclose their backend monetisation pipelines. The Bangalore tech hub is scrambling for regulatory loopholes.</p><p>Under the new DPDP mandates, non-compliance carries heavy penalties, prompting a lobbying push to water down the definitions of data processing.</p>`
+                    authortype: "ai",
+                    imageurl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+                    originalurl: "#",
+                    fullblog: `<p>Tech startups are suddenly discovering that acquiring 'explicit user consent' is a massive operational headache when they actually have to disclose their backend monetisation pipelines. The Bangalore tech hub is scrambling for regulatory loopholes.</p><p>Under the new DPDP mandates, non-compliance carries heavy penalties, prompting a lobbying push to water down the definitions of data processing.</p>`
                 },
                 {
                     id: "gnews_3",
                     category: "Tech",
-                    aiHeadline: "The Agri-Tech Bubble: Edge-Computing Moisture Sensors Sold to Farmers Lacking Basic Water Pipelines",
-                    aiSummary: "Venture capitalists have successfully dumped $40 million into high-tech soil monitoring sensors. The startup is prioritizing machine-learning algorithms over basic, physical water irrigation structures in drought districts.",
-                    biasAudit: "VC narrative prioritizes selling proprietary AI sensors to smallholders before sorting basic agricultural resources.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "Agri-Tech Bubble",
-                    timeAgo: "12:10 am IST",
+                    aiheadline: "The Agri-Tech Bubble: Edge-Computing Moisture Sensors Sold to Farmers Lacking Basic Water Pipelines",
+                    aisummary: "Venture capitalists have successfully dumped $40 million into high-tech soil monitoring sensors. The startup is prioritizing machine-learning algorithms over basic, physical water irrigation structures in drought districts.",
+                    biasaudit: "VC narrative prioritizes selling proprietary AI sensors to smallholders before sorting basic agricultural resources.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "Agri-Tech Bubble",
+                    timeago: "12:10 am IST",
                     author: "Honestly Biased AI Engine (Gemini)",
-                    authorType: "ai",
-                    imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
-                    originalUrl: "#",
-                    fullBlog: `<p>Venture capitalists have successfully dumped $40 million into high-tech soil monitoring sensors. The startup is prioritizing machine-learning algorithms over basic, physical water irrigation structures in drought districts.</p><p>This disconnect highlights a broader trend where Silicon Valley-style tech solutions are force-fitted onto infrastructure deficits.</p>`
+                    authortype: "ai",
+                    imageurl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
+                    originalurl: "#",
+                    fullblog: `<p>Venture capitalists have successfully dumped $40 million into high-tech soil monitoring sensors. The startup is prioritizing machine-learning algorithms over basic, physical water irrigation structures in drought districts.</p><p>This disconnect highlights a broader trend where Silicon Valley-style tech solutions are force-fitted onto infrastructure deficits.</p>`
                 },
                 {
                     id: "gnews_4",
                     category: "Politics",
-                    aiHeadline: "The Illusion of Consensus: Bending the Corporate News Narrative",
-                    aiSummary: "Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.",
-                    biasAudit: "Corporate media news coverage framing policy as consensual to protect advertising dependencies.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "Illusion of Consensus",
-                    timeAgo: "11:59 pm IST",
+                    aiheadline: "The Illusion of Consensus: Bending the Corporate News Narrative",
+                    aisummary: "Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.",
+                    biasaudit: "Corporate media news coverage framing policy as consensual to protect advertising dependencies.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "Illusion of Consensus",
+                    timeago: "11:59 pm IST",
                     author: "Honestly Biased Editorial Board (Admin)",
-                    authorType: "admin",
-                    imageUrl: "./assets/hero-bg.png",
-                    originalUrl: "#",
-                    fullBlog: `<p>Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.</p>`
+                    authortype: "admin",
+                    imageurl: "./assets/hero-bg.png",
+                    originalurl: "#",
+                    fullblog: `<p>Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.</p>`
                 },
                 {
                     id: "gnews_5",
                     category: "Health",
-                    aiHeadline: "Ebola Outbreak: Spreading into New Areas in Northeast DR Congo, WHO Warns",
-                    aiSummary: "The Ebola outbreak in the northeastern Democratic Republic of Congo is spreading into new areas, the World Health Organization warned. Isolation bed capacity remains far below anticipated needs.",
-                    biasAudit: "Mainstream networks underreport public health crises in global South until they threaten Western travel corridors.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "Ebola Outbreak",
-                    timeAgo: "11:58 pm IST",
+                    aiheadline: "Ebola Outbreak: Spreading into New Areas in Northeast DR Congo, WHO Warns",
+                    aisummary: "The Ebola outbreak in the northeastern Democratic Republic of Congo is spreading into new areas, the World Health Organization warned. Isolation bed capacity remains far below anticipated needs.",
+                    biasaudit: "Mainstream networks underreport public health crises in global South until they threaten Western travel corridors.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "Ebola Outbreak",
+                    timeago: "11:58 pm IST",
                     author: "Honestly Biased AI Engine (Gemini)",
-                    authorType: "ai",
-                    imageUrl: "https://images.unsplash.com/photo-1584037672826-6044a5e3c7a9?auto=format&fit=crop&w=800&q=80",
-                    originalUrl: "#",
-                    fullBlog: `<p>The Ebola outbreak in the northeastern Democratic Republic of Congo is spreading into new areas, the World Health Organization warned. Isolation bed capacity remains far below anticipated needs.</p><p>Medical resources are severely strained, and international aid agencies are urging faster deployment of containment personnel.</p>`
+                    authortype: "ai",
+                    imageurl: "https://images.unsplash.com/photo-1584037672826-6044a5e3c7a9?auto=format&fit=crop&w=800&q=80",
+                    originalurl: "#",
+                    fullblog: `<p>The Ebola outbreak in the northeastern Democratic Republic of Congo is spreading into new areas, the World Health Organization warned. Isolation bed capacity remains far below anticipated needs.</p><p>Medical resources are severely strained, and international aid agencies are urging faster deployment of containment personnel.</p>`
                 },
                 {
                     id: "gnews_6",
                     category: "Politics",
-                    aiHeadline: "The Carbon Syndicate: Auditing Global Offset Schemes",
-                    aiSummary: "Corporate offset programs are revealed to be mostly phantom forests. Underneath, paper offsets allow high-polluting sectors to trade credits without modifying real operational emissions.",
-                    biasAudit: "Consensus reporting structures frame auditing discrepancies as minor accounting adjustments.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "The Carbon Syndicate: Auditing Global Offset Schemes",
-                    timeAgo: "11:50 pm IST",
+                    aiheadline: "The Carbon Syndicate: Auditing Global Offset Schemes",
+                    aisummary: "Corporate offset programs are revealed to be mostly phantom forests. Underneath, paper offsets allow high-polluting sectors to trade credits without modifying real operational emissions.",
+                    biasaudit: "Consensus reporting structures frame auditing discrepancies as minor accounting adjustments.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "The Carbon Syndicate: Auditing Global Offset Schemes",
+                    timeago: "11:50 pm IST",
                     author: "Honestly Biased Editorial Board (Admin)",
-                    authorType: "admin",
-                    imageUrl: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
-                    originalUrl: "#",
-                    fullBlog: `<p>Corporate offset programs are revealed to be mostly phantom forests. Underneath, paper offsets allow high-polluting sectors to trade credits without modifying real operational emissions.</p>`
+                    authortype: "admin",
+                    imageurl: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+                    originalurl: "#",
+                    fullblog: `<p>Corporate offset programs are revealed to be mostly phantom forests. Underneath, paper offsets allow high-polluting sectors to trade credits without modifying real operational emissions.</p>`
                 },
                 {
                     id: "gnews_7",
                     category: "Entertainment",
-                    aiHeadline: "FIFA 2026 Opening Spectacle: Nora Fatehi and Shakira Front Massive Concert Event",
-                    aiSummary: "Nora Fatehi performed in Canada and Shakira performed in Mexico as FIFA kicked off its triple-nation opening spectacle. The massive corporate concert is designed to project global unity while distracting from licensing controversies.",
-                    biasAudit: "Media outlets focus on celebrity choreography to crowd out coverage of sports governance auditing and local stadium debt.",
-                    originalSource: "Honestly Biased Editorial Board",
-                    originalTitle: "FIFA 2026 Opening Spectacle",
-                    timeAgo: "11:45 pm IST",
+                    aiheadline: "FIFA 2026 Opening Spectacle: Nora Fatehi and Shakira Front Massive Concert Event",
+                    aisummary: "Nora Fatehi performed in Canada and Shakira performed in Mexico as FIFA kicked off its triple-nation opening spectacle. The massive corporate concert is designed to project global unity while distracting from licensing controversies.",
+                    biasaudit: "Media outlets focus on celebrity choreography to crowd out coverage of sports governance auditing and local stadium debt.",
+                    originalsource: "Honestly Biased Editorial Board",
+                    originaltitle: "FIFA 2026 Opening Spectacle",
+                    timeago: "11:45 pm IST",
                     author: "Honestly Biased AI Engine (Gemini)",
-                    authorType: "ai",
-                    imageUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80",
-                    originalUrl: "#",
-                    fullBlog: `<p>Nora Fatehi performed in Canada and Shakira performed in Mexico as FIFA kicked off its triple-nation opening spectacle. The massive corporate concert is designed to project global unity while distracting from licensing controversies.</p>`
+                    authortype: "ai",
+                    imageurl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80",
+                    originalurl: "#",
+                    fullblog: `<p>Nora Fatehi performed in Canada and Shakira performed in Mexico as FIFA kicked off its triple-nation opening spectacle. The massive corporate concert is designed to project global unity while distracting from licensing controversies.</p>`
                 }
             ];
 
@@ -549,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const article = allArticles.find(a => String(a.id) === String(articleId));
         if (!article) return;
 
-        console.log(`👁️ Opening Honestly Biased audit modal for article: "${article.aiHeadline}"`);
+        console.log(`👁️ Opening Honestly Biased audit modal for article: "${article.aiheadline}"`);
 
         // Hydrate details
         if (modalCategory) {
@@ -557,20 +557,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Align color tags based on category
             modalCategory.className = 'modal-tag ' + (article.category.toLowerCase().trim() === 'tech' ? 'green-bg' : 'saffron-bg');
         }
-        if (modalTime) modalTime.innerHTML = `<i data-lucide="clock"></i> ${article.timeAgo}`;
-        if (modalTitle) modalTitle.textContent = article.aiHeadline;
-        if (modalSource) modalSource.textContent = `Source: ${article.originalSource || article.originalTitle}`;
-        if (modalBiasAudit) modalBiasAudit.textContent = article.biasAudit;
-        if (modalSummary) modalSummary.textContent = article.aiSummary;
-        if (modalOriginalLink) modalOriginalLink.href = article.originalUrl;
+        if (modalTime) modalTime.innerHTML = `<i data-lucide="clock"></i> ${article.timeago}`;
+        if (modalTitle) modalTitle.textContent = article.aiheadline;
+        if (modalSource) modalSource.textContent = `Source: ${article.originalsource || article.originaltitle}`;
+        if (modalBiasAudit) modalBiasAudit.textContent = article.biasaudit;
+        if (modalSummary) modalSummary.textContent = article.aisummary;
+        if (modalOriginalLink) modalOriginalLink.href = article.originalurl;
 
         // Dynamic Author Badging in Modal Reader
         const modalAuthor = document.querySelector('.modal-author');
         if (modalAuthor) {
-            if (article.authorType === 'admin') {
+            if (article.authortype === 'admin') {
                 modalAuthor.innerHTML = `<i data-lucide="pen-tool" style="width:14px; height:14px;"></i> Honestly Biased Editorial Board (Admin)`;
                 modalAuthor.style.color = 'var(--accent-green)'; // Gold
-            } else if (article.authorType === 'instagram') {
+            } else if (article.authortype === 'instagram') {
                 modalAuthor.innerHTML = `<i data-lucide="instagram" style="width:14px; height:14px;"></i> Honestly Biased AI Engine (Instagram Ingestion)`;
                 modalAuthor.style.color = '#e1306c'; // Instagram Pink
             } else {
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Dynamic Media Container Hydration
         const mediaContainer = document.getElementById('modal-media-container');
         if (mediaContainer) {
-            if (article.authorType === 'instagram' && article.instagramShortcode) {
+            if (article.authortype === 'instagram' && article.instagramShortcode) {
                 mediaContainer.style.display = 'block';
                 mediaContainer.innerHTML = `
                     <div class="instagram-embed-wrapper" style="position: relative; width: 100%; max-width: 540px; margin: 0 auto; aspect-ratio: 328/420; background: rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; border: 1px solid rgba(225, 48, 108, 0.3);">
@@ -597,10 +597,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         </iframe>
                     </div>
                 `;
-            } else if (article.imageUrl) {
+            } else if (article.imageurl) {
                 mediaContainer.style.display = 'block';
                 mediaContainer.innerHTML = `
-                    <img src="${article.imageUrl}" alt="${article.aiHeadline}" style="width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--border-glass);">
+                    <img src="${article.imageurl}" alt="${article.aiheadline}" style="width: 100%; max-height: 320px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--border-glass);">
                 `;
             } else {
                 mediaContainer.style.display = 'none';
@@ -687,26 +687,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index === 0) {
                 // Render the first article as a large high-fidelity cover visual bento (span 2x2)
                 gridItems.push(`
-                    <article class="bento-card bento-span-2x2 glass-element ${article.authorType === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
+                    <article class="bento-card bento-span-2x2 glass-element ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
                         <div class="card-visual">
-                            <div class="card-image-bg" style="background-image: url('${article.imageUrl}'); filter: saturate(0.85) contrast(1.15);"></div>
+                            <div class="card-image-bg" style="background-image: url('${article.imageurl}'); filter: saturate(0.85) contrast(1.15);"></div>
                             <div class="card-tag saffron-bg">${article.category}</div>
                         </div>
                         <div class="card-body">
                             <span class="card-time" style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                                ${article.authorType === 'admin' 
+                                ${article.authortype === 'admin' 
                                     ? '<span class="author-type-badge badge-admin"><i data-lucide="pen-tool" style="width:10px;height:10px;"></i> Editorial</span>' 
-                                    : (article.authorType === 'instagram'
+                                    : (article.authortype === 'instagram'
                                         ? '<span class="author-type-badge badge-instagram"><i data-lucide="instagram" style="width:10px;height:10px;"></i> 🎥 IG Video</span>'
                                         : '<span class="author-type-badge badge-ai"><i data-lucide="cpu" style="width:10px;height:10px;"></i> AI Audited</span>')}
-                                <i data-lucide="clock" style="margin-left:4px;"></i> ${article.timeAgo}
+                                <i data-lucide="clock" style="margin-left:4px;"></i> ${article.timeago}
                             </span>
                             <h3 class="card-title" style="margin-top:10px;">
-                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiHeadline}</a>
+                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
                             </h3>
-                            <p class="card-summary">${article.aiSummary}</p>
+                            <p class="card-summary">${article.aisummary}</p>
                             <div class="card-footer-meta">
-                                <span class="card-author" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">Bias Audit: ${article.biasAudit}</span>
+                                <span class="card-author" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">Bias Audit: ${article.biasaudit}</span>
                                 <span class="card-action"><i data-lucide="arrow-up-right"></i></span>
                             </div>
                         </div>
@@ -715,27 +715,27 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (index === 3) {
                 // Render a mid-level horizontal powerhouse card (span 2x1) for rhythm variety
                 gridItems.push(`
-                    <article class="bento-card bento-span-2x1 glass-element video-preview-card ${article.authorType === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
+                    <article class="bento-card bento-span-2x1 glass-element video-preview-card ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
                         <div class="card-visual">
-                            <div class="card-image-bg" style="background-image: url('${article.imageUrl}'); filter: brightness(0.65) grayscale(0.25);"></div>
+                            <div class="card-image-bg" style="background-image: url('${article.imageurl}'); filter: brightness(0.65) grayscale(0.25);"></div>
                             <span class="card-tag green-bg">${article.category}</span>
                             <span class="video-play-overlay"><i data-lucide="arrow-up-right"></i></span>
                         </div>
                         <div class="card-body">
                             <span class="card-time" style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                                ${article.authorType === 'admin' 
+                                ${article.authortype === 'admin' 
                                     ? '<span class="author-type-badge badge-admin"><i data-lucide="pen-tool" style="width:10px;height:10px;"></i> Editorial</span>' 
-                                    : (article.authorType === 'instagram'
+                                    : (article.authortype === 'instagram'
                                         ? '<span class="author-type-badge badge-instagram"><i data-lucide="instagram" style="width:10px;height:10px;"></i> 🎥 IG Video</span>'
                                         : '<span class="author-type-badge badge-ai"><i data-lucide="cpu" style="width:10px;height:10px;"></i> AI Audited</span>')}
-                                <i data-lucide="clock" style="margin-left:4px;"></i> ${article.timeAgo}
+                                <i data-lucide="clock" style="margin-left:4px;"></i> ${article.timeago}
                             </span>
                             <h3 class="card-title" style="margin-top:10px;">
-                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiHeadline}</a>
+                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
                             </h3>
-                            <p class="card-summary">${article.aiSummary}</p>
+                            <p class="card-summary">${article.aisummary}</p>
                             <div class="card-footer-meta">
-                                <span class="card-author" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">Bias Audit: ${article.biasAudit}</span>
+                                <span class="card-author" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">Bias Audit: ${article.biasaudit}</span>
                             </div>
                         </div>
                     </article>
@@ -743,25 +743,25 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Render standard bento boxes (span 1x1)
                 gridItems.push(`
-                    <article class="bento-card bento-span-1x1 glass-element ${article.authorType === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
+                    <article class="bento-card bento-span-1x1 glass-element ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
                         <div class="card-body header-only-body">
                             <div class="card-tag-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                                 <span class="card-tag saffron-bg" style="margin-bottom:0;">${article.category}</span>
                                 <span class="card-time" style="font-size:0.65rem; color:var(--text-muted); font-weight:700; display:flex; align-items:center; gap:2px;">
-                                    ${article.authorType === 'admin' 
+                                    ${article.authortype === 'admin' 
                                         ? '<span class="author-type-badge badge-admin" style="margin-right:2px; padding:2px 4px;"><i data-lucide="pen-tool" style="width:8px;height:8px;"></i> Edit</span>' 
-                                        : (article.authorType === 'instagram'
+                                        : (article.authortype === 'instagram'
                                             ? '<span class="author-type-badge badge-instagram" style="margin-right:2px; padding:2px 4px;"><i data-lucide="instagram" style="width:8px;height:8px;"></i> IG Video</span>'
                                             : '<span class="author-type-badge badge-ai" style="margin-right:2px; padding:2px 4px;"><i data-lucide="cpu" style="width:8px;height:8px;"></i> AI</span>')}
-                                    ${article.timeAgo}
+                                    ${article.timeago}
                                 </span>
                             </div>
                             <h3 class="card-title" style="margin-bottom:10px;">
-                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiHeadline}</a>
+                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
                             </h3>
-                            <p class="card-summary small-summary" style="display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${article.aiSummary}</p>
+                            <p class="card-summary small-summary" style="display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${article.aisummary}</p>
                             <div class="card-footer-meta" style="margin-top:auto; padding-top:12px; border-top:1px solid rgba(255,255,255,0.03);">
-                                <span class="card-author" style="font-size:0.68rem; color:var(--accent-green); font-weight:700; line-height:1.35; display:block;">Bias Audit: ${article.biasAudit}</span>
+                                <span class="card-author" style="font-size:0.68rem; color:var(--accent-green); font-weight:700; line-height:1.35; display:block;">Bias Audit: ${article.biasaudit}</span>
                             </div>
                         </div>
                     </article>
@@ -1194,14 +1194,14 @@ document.addEventListener('DOMContentLoaded', () => {
             article = {
                 id: "featured-story",
                 category: "Politics",
-                aiHeadline: "The Illusion of Consensus: Bending the Corporate News Narrative",
-                timeAgo: "Audited Today",
+                aiheadline: "The Illusion of Consensus: Bending the Corporate News Narrative",
+                timeago: "Audited Today",
                 author: "Aniket Verma",
-                authorType: "admin",
-                imageUrl: "./assets/hero-bg.png",
-                originalSource: "Honestly Biased Editorial Board",
-                originalUrl: "#",
-                fullBlog: `
+                authortype: "admin",
+                imageurl: "./assets/hero-bg.png",
+                originalsource: "Honestly Biased Editorial Board",
+                originalurl: "#",
+                fullblog: `
                     <p class="blog-lead">Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. In a landscape structured by corporate sponsorship and administrative convenience, "neutrality" is rarely neutral.</p>
                     
                     <p>When major broadcast platforms present complex economic policies, they often deploy a performative balance—giving equal weight to corporate lobbyists and affected local communities as if their incentives were identical. This artificial consensus serves to obscure the deep structural inequalities, policy loopholes, and direct corporate influence that shape the legislative process. By framing political concessions as procedural adjustments, the mainstream media actively manufactures consent under the cover of objective reporting.</p>
@@ -1224,7 +1224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        console.log(`👁️ Routing to full blog page for article: "${article.aiHeadline}"`);
+        console.log(`👁️ Routing to full blog page for article: "${article.aiheadline}"`);
 
         // Hide Hero, Bento grid, and other sections
         const heroSection = document.querySelector('.hero-section');
@@ -1249,20 +1249,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const detailOriginalLink = document.getElementById('detail-original-link');
 
             // Strip "Refracted: " prefix from headline when displaying
-            const cleanedHeadline = article.aiHeadline.replace(/^Refracted:\s*/i, '');
+            const cleanedHeadline = article.aiheadline.replace(/^Refracted:\s*/i, '');
 
             if (detailCategory) {
                 detailCategory.textContent = article.category;
                 detailCategory.className = 'modal-tag ' + (article.category.toLowerCase().trim() === 'tech' ? 'green-bg' : 'saffron-bg');
             }
-            if (detailTime) detailTime.innerHTML = `<i data-lucide="clock" style="width: 14px; height: 14px;"></i> ${article.timeAgo}`;
+            if (detailTime) detailTime.innerHTML = `<i data-lucide="clock" style="width: 14px; height: 14px;"></i> ${article.timeago}`;
             if (detailTitle) detailTitle.textContent = cleanedHeadline;
             
             if (detailAuthor) {
-                if (article.authorType === 'admin') {
+                if (article.authortype === 'admin') {
                     detailAuthor.innerHTML = `<i data-lucide="pen-tool" style="width:16px; height:16px;"></i> Honestly Biased Editorial Board (Admin)`;
                     detailAuthor.style.color = 'var(--accent-green)'; // Gold
-                } else if (article.authorType === 'instagram') {
+                } else if (article.authortype === 'instagram') {
                     detailAuthor.innerHTML = `<i data-lucide="instagram" style="width:16px; height:16px;"></i> Honestly Biased AI Engine (Instagram Ingestion)`;
                     detailAuthor.style.color = '#e1306c'; // Instagram Pink
                 } else {
@@ -1273,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Hydrate Media
             if (detailMediaContainer) {
-                if (article.authorType === 'instagram' && article.instagramShortcode) {
+                if (article.authortype === 'instagram' && article.instagramShortcode) {
                     detailMediaContainer.style.display = 'block';
                     detailMediaContainer.innerHTML = `
                         <div class="instagram-embed-wrapper" style="position: relative; width: 100%; max-width: 540px; margin: 0 auto; aspect-ratio: 328/420; background: rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; border: 1px solid rgba(225, 48, 108, 0.3);">
@@ -1288,10 +1288,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             </iframe>
                         </div>
                     `;
-                } else if (article.imageUrl) {
+                } else if (article.imageurl) {
                     detailMediaContainer.style.display = 'block';
                     detailMediaContainer.innerHTML = `
-                        <img src="${article.imageUrl}" alt="${cleanedHeadline}" style="width: 100%; max-height: 450px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--border-glass);">
+                        <img src="${article.imageurl}" alt="${cleanedHeadline}" style="width: 100%; max-height: 450px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--border-glass);">
                     `;
                 } else {
                     detailMediaContainer.style.display = 'none';
@@ -1301,12 +1301,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Hydrate Blog content paragraphs
             if (detailContent) {
-                if (article.fullBlog) {
+                if (article.fullblog) {
                     // Split content by newlines to wrap in paragraphs or render HTML directly if pre-formatted
-                    if (article.fullBlog.includes('<p>')) {
-                        detailContent.innerHTML = article.fullBlog;
+                    if (article.fullblog.includes('<p>')) {
+                        detailContent.innerHTML = article.fullblog;
                     } else {
-                        const paras = article.fullBlog.split('\n\n').filter(p => p.trim());
+                        const paras = article.fullblog.split('\n\n').filter(p => p.trim());
                         detailContent.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
                     }
                 } else {
@@ -1316,11 +1316,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (detailSource) {
-                detailSource.textContent = `Source Attribution: ${article.originalSource || article.originalTitle}`;
+                detailSource.textContent = `Source Attribution: ${article.originalsource || article.originaltitle}`;
             }
 
             if (detailOriginalLink) {
-                detailOriginalLink.href = article.originalUrl;
+                detailOriginalLink.href = article.originalurl;
             }
 
             // Scroll window to top smoothly
@@ -1332,14 +1332,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateFallbackBlog(article) {
-        const cleanedHeadline = article.aiHeadline.replace(/^Refracted:\s*/i, '');
+        const cleanedHeadline = article.aiheadline.replace(/^Refracted:\s*/i, '');
         return `
             <p class="blog-lead">In a media landscape dominated by corporate spin and sanitised press releases, the core facts of this event deserve an uncompromised audit. Let's peel back the narrative layers surrounding the headline: <strong>"${cleanedHeadline}"</strong>.</p>
             
-            <p>${article.aiSummary}</p>
+            <p>${article.aisummary}</p>
             
             <p class="blog-analysis-heading"><strong>The Honestly Biased Audit:</strong></p>
-            <blockquote>${article.biasAudit}</blockquote>
+            <blockquote>${article.biasaudit}</blockquote>
             
             <p>What we observe here is not an isolated incident of PR posturing, but a systemic pattern. When institutional power structures or high-tech platforms frame operational hurdles as 'innovation' or 'progress', they are actively manufacturing consent. It is our duty as critical observers to audit these claims, question the underlying incentives, and reject the performative neutrality that dominates mainstream media reporting.</p>
             

@@ -41,9 +41,9 @@ module.exports = async (req, res) => {
       // Create new article – client supplies fields used by admin UI
       const payload = {
         ...body,
-        authorType: 'admin', // mark as admin editorial
+        authortype: 'admin', // mark as admin editorial
         author: 'CMS Admin',
-        timeAgo: new Date().toLocaleTimeString('en-IN', {
+        timeago: new Date().toLocaleTimeString('en-IN', {
           timeZone: 'Asia/Kolkata',
           hour: '2-digit',
           minute: '2-digit',

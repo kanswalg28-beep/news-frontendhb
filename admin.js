@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!allArticles) return;
 
         const total = allArticles.length;
-        const customCount = allArticles.filter(a => a.authorType === 'admin').length;
-        const aiCount = allArticles.filter(a => a.authorType === 'ai' || a.authorType === 'instagram').length;
+        const customCount = allArticles.filter(a => a.authortype === 'admin').length;
+        const aiCount = allArticles.filter(a => a.authortype === 'ai' || a.authortype === 'instagram').length;
 
         // Categories set
         const categoriesSeen = new Set();
@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Filter based on search input query
         const query = searchFilterQuery.toLowerCase().trim();
         const filtered = allArticles.filter(article => {
-            const matchHeadline = article.aiHeadline && article.aiHeadline.toLowerCase().includes(query);
-            const matchSource = article.originalSource && article.originalSource.toLowerCase().includes(query);
+            const matchHeadline = article.aiheadline && article.aiheadline.toLowerCase().includes(query);
+            const matchSource = article.originalsource && article.originalsource.toLowerCase().includes(query);
             const matchCategory = article.category && article.category.toLowerCase().includes(query);
             const matchAuthor = article.author && article.author.toLowerCase().includes(query);
             return matchHeadline || matchSource || matchCategory || matchAuthor;
@@ -135,15 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let badgeClass = 'badge-ai';
             let badgeText = '🤖 AI Audited';
-            if (article.authorType === 'admin') {
+            if (article.authortype === 'admin') {
                 badgeClass = 'badge-admin';
                 badgeText = '✍️ Editorial';
-            } else if (article.authorType === 'instagram') {
+            } else if (article.authortype === 'instagram') {
                 badgeClass = 'badge-instagram';
                 badgeText = '🎥 IG Video';
             }
 
-            const cardImageUrl = article.imageUrl || "./assets/hero-bg.png";
+            const cardImageUrl = article.imageurl || "./assets/hero-bg.png";
 
             let regionBadge = '🇮🇳 Indian';
             if (article.region === 'world') regionBadge = '🌐 World';
@@ -157,13 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <!-- Card content meta -->
                 <div class="admin-row-body">
-                    <h3 class="admin-row-title">${article.aiHeadline}</h3>
+                    <h3 class="admin-row-title">${article.aiheadline}</h3>
                     
                     <div class="admin-row-meta">
                         <span class="author-type-badge ${badgeClass}">${badgeText}</span>
                         <span class="author-type-badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-glass);">${regionBadge}</span>
-                        <span><i data-lucide="globe"></i> ${article.originalSource || 'Honestly Biased'}</span>
-                        <span><i data-lucide="clock"></i> ${article.timeAgo}</span>
+                        <span><i data-lucide="globe"></i> ${article.originalsource || 'Honestly Biased'}</span>
+                        <span><i data-lucide="clock"></i> ${article.timeago}</span>
                     </div>
                 </div>
                 
@@ -191,16 +191,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     cmsArticleId.value = article.id;
                     cmsCategory.value = article.category;
                     cmsRegion.value = article.region || 'indian';
-                    cmsSource.value = article.originalSource || '';
-                    cmsHeadline.value = article.aiHeadline;
-                    cmsBiasAudit.value = article.biasAudit;
-                    cmsSummary.value = article.aiSummary;
-                    if (cmsFullBlog) cmsFullBlog.value = article.fullBlog || '';
-                    cmsImageUrl.value = article.imageUrl || '';
-                    cmsOriginalUrl.value = article.originalUrl || '';
+                    cmsSource.value = article.originalsource || '';
+                    cmsHeadline.value = article.aiheadline;
+                    cmsBiasAudit.value = article.biasaudit;
+                    cmsSummary.value = article.aisummary;
+                    if (cmsFullBlog) cmsFullBlog.value = article.fullblog || '';
+                    cmsImageUrl.value = article.imageurl || '';
+                    cmsOriginalUrl.value = article.originalurl || '';
                     
                     // Trigger live preview reload
-                    cmsPreviewImg.src = article.imageUrl || "./assets/hero-bg.png";
+                    cmsPreviewImg.src = article.imageurl || "./assets/hero-bg.png";
                     
                     // Show edit mode headers
                     cmsFormTitle.textContent = "Refine News Chronicle";
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const article = allArticles.find(a => String(a.id) === String(id));
                 if (!article) return;
 
-                if (confirm(`Scrub and erase "${article.aiHeadline}" permanently from the database cache?`)) {
+                if (confirm(`Scrub and erase "${article.aiheadline}" permanently from the database cache?`)) {
                     try {
                         const response = await fetch(`/api/admin/articles/${id}`, {
                             method: 'DELETE'
@@ -260,13 +260,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 category: cmsCategory.value,
                 region: cmsRegion.value,
-                originalSource: cmsSource.value || "Honestly Biased Editorial Board",
-                aiHeadline: cmsHeadline.value,
-                biasAudit: cmsBiasAudit.value,
-                aiSummary: cmsSummary.value,
-                fullBlog: cmsFullBlog ? cmsFullBlog.value : "",
-                imageUrl: cmsImageUrl.value || "./assets/hero-bg.png",
-                originalUrl: cmsOriginalUrl.value || "#"
+                originalsource: cmsSource.value || "Honestly Biased Editorial Board",
+                aiheadline: cmsHeadline.value,
+                biasaudit: cmsBiasAudit.value,
+                aisummary: cmsSummary.value,
+                fullblog: cmsFullBlog ? cmsFullBlog.value : "",
+                imageurl: cmsImageUrl.value || "./assets/hero-bg.png",
+                originalurl: cmsOriginalUrl.value || "#"
             };
 
             try {
