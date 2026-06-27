@@ -2,7 +2,7 @@
 // Uses Supabase client (db/client.js) for persistence
 // Optional Basic Auth same as parent endpoint
 
-const { supabase } = require('../../../../db/client');
+const { supabase } = require('../../../db/client');
 
 function basicAuth(req) {
   const authHeader = req.headers['authorization'];
@@ -34,15 +34,24 @@ module.exports = async (req, res) => {
 
   try {
     if (method === 'PUT') {
-      const { data, error } = await supabase.from('articles').update(body).eq('id', articleId);
+      const { data, error } = await supabase
+        .from('articles')
+        .update(body)
+        .eq('id', articleId)
+        .select()
+        .single();
       if (error) throw error;
-      return res.json(data[0]);
+      return res.json(data);
     }
 
     if (method === 'DELETE') {
-      const { data, error } = await supabase.from('articles').delete().eq('id', articleId);
+      const { data, error } = await supabase
+        .from('articles')
+        .delete()
+        .eq('id', articleId)
+        .select();
       if (error) throw error;
-      return res.json({ success: true, deletedId: articleId });
+      return res.json({ success: true, deletedId: articleId, deleted: data });
     }
 
     // Unsupported method
