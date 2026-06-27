@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCMSData() {
         console.log("📡 Fetching CMS articles for hydration...");
         try {
-            const response = await fetch('/api/admin/articles');
+            const response = await fetch('/api/admin/articles?_t=' + Date.now());
             if (response.ok) {
                 const data = await response.json();
                 allArticles = Array.isArray(data) ? data : [];
