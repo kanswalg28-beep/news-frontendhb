@@ -821,13 +821,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // skip ones the static observer already captured
             if (!card.classList.contains('reveal-attached')) {
                 card.classList.add('reveal-attached');
+                card.dataset.revealAttached = '1';
                 card.style.transition = card.style.transition ||
                     'opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
                 bentoObserver.observe(card);
             }
         });
 
-        // Safety net: if any card is still invisible after 1.5s (e.g. user has
+        // Safety net: if any card is still invisible after 800ms (e.g. user has
         // reduced motion or the observer never fired because the card was rendered
         // already in-view but the entry was missed), reveal them. Prevents
         // reload returning a "clear space" if the network call landed
@@ -839,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.style.transform = 'translateY(0)';
                 }
             });
-        }, 1500);
+        }, 800);
     }
 
     // Region Tabs Event Listeners (Triggers Hash Change to route through SPA)

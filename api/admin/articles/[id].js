@@ -41,6 +41,7 @@ module.exports = async (req, res) => {
         .select()
         .single();
       if (error) throw error;
+      if (!data) return res.status(404).json({ error: 'Article not found' });
       return res.json(data);
     }
 
@@ -51,6 +52,8 @@ module.exports = async (req, res) => {
         .eq('id', articleId)
         .select();
       if (error) throw error;
+      if (!data || !Array.isArray(data) || data.length === 0)
+        return res.status(404).json({ error: 'Article not found' });
       return res.json({ success: true, deletedId: articleId, deleted: data });
     }
 
