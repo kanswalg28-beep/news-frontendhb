@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/refresh-gnews",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
