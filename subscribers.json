@@ -1,0 +1,54 @@
+[
+  {
+    "email": "subscriber_1781337313241@test.com",
+    "subscribedAt": "2026-06-13T07:55:13.243Z"
+  },
+  {
+    "email": "spam_0_1781337313273@spam.com",
+    "subscribedAt": "2026-06-13T07:55:13.275Z"
+  },
+  {
+    "email": "spam_1_1781337313276@spam.com",
+    "subscribedAt": "2026-06-13T07:55:13.277Z"
+  },
+  {
+    "email": "spam_2_1781337313278@spam.com",
+    "subscribedAt": "2026-06-13T07:55:13.279Z"
+  },
+  {
+    "email": "spam_3_1781337313281@spam.com",
+    "subscribedAt": "2026-06-13T07:55:13.282Z"
+  },
+  {
+    "email": "spam_4_1781337313283@spam.com",
+    "subscribedAt": "2026-06-13T07:55:13.285Z"
+  },
+  {
+    "email": "spam_5_1781337313286@spam.com",
+    "subscribedAt": "2026-06-13T07:55:13.287Z"
+  },
+  {
+    "email": "subscriber_1781337425778@test.com",
+    "subscribedAt": "2026-06-13T07:57:05.780Z"
+  },
+  {
+    "email": "spam_0_1781337425807@spam.com",
+    "subscribedAt": "2026-06-13T07:57:05.808Z"
+  },
+  {
+    "email": "spam_1_1781337425810@spam.com",
+    "subscribedAt": "2026-06-13T07:57:05.811Z"
+  },
+  {
+    "email": "spam_2_1781337425812@spam.com",
+    "subscribedAt": "2026-06-13T07:57:05.813Z"
+  },
+  {
+    "email": "spam_3_1781337425814@spam.com",
+    "subscribedAt": "2026-06-13T07:57:05.814Z"
+  },
+  {
+    "email": "spam_4_1781337425816@spam.com",
+    "subscribedAt": "2026-06-13T07:57:05.817Z"
+  }
+]

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Honestly Biased - Independent Commentary, Satire & Political Audit. We reject the veneer of fake corporate neutrality, choosing transparent perspective and sharp political commentary.">
+    <meta name="keywords" content="Honestly Biased, Indian political satire, independent journalism, news commentary, media critique">
+    <meta name="author" content="Honestly Biased Team">
+    
+    <!-- Open Graph Metadata for Social Sharing -->
+    <meta property="og:title" content="Honestly Biased | Independent Commentary, Satire & News Analysis">
+    <meta property="og:description" content="We reject the corporate veneer of fake neutrality. Explore transparent perspectives shaping Indian politics and society.">
+    <meta property="og:image" content="./assets/hero-bg.png">
+    <meta property="og:type" content="website">
+
+    <title>Honestly Biased | Independent Commentary, Satire & News Analysis</title>
+
+    <!-- Google Fonts: Outfit (Body & UI text) & Space Grotesk (Punchy, bold geometric sans-serif for titles) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons via CDN for clean vector UI symbols -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Core Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- Skip to Main Content for Accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+    <!-- STICKY GLASSMORPHIC HEADER -->
+    <header class="main-header glass-element" id="main-header">
+        <div class="header-container">
+            <!-- Brand Identity -->
+            <a href="#" class="brand-logo" aria-label="Honestly Biased Home">
+                <img src="./assets/logo.png" alt="Honestly Biased Logo" class="logo-png" id="logo-img">
+            </a>
+
+
+
+            <!-- Center Highlights in Header -->
+            <div class="header-highlights">
+                <span class="ticker-label">
+                    <span class="live-dot saffron-pulse"></span>
+                    HIGHLIGHTS
+                </span>
+                <div class="ticker-scroll">
+                    <div class="ticker-track">
+                        <!-- Hydrated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Area (Theme Switch & Search & Mobile Hamburger) -->
+            <div class="header-actions">
+                <button class="icon-btn search-trigger" aria-label="Search website">
+                    <i data-lucide="search"></i>
+                </button>
+                
+                <!-- Premium Toggle Switch for Dark / Light Mode -->
+                <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle color theme" title="Toggle between Dark and Light mode">
+                    <span class="theme-toggle-track">
+                        <span class="theme-toggle-thumb">
+                            <i data-lucide="moon" class="icon-dark"></i>
+                            <i data-lucide="sun" class="icon-light"></i>
+                        </span>
+                    </span>
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN TEMPLATE WRAPPER -->
+    <main id="main-content">
+
+        <!-- Dynamic Premium Region Selector Bar (Top of Page) -->
+        <div class="top-region-bar glass-element">
+            <div class="top-region-container">
+                <div class="region-tabs-container" id="region-tabs-container">
+                    <div class="active-indicator-pill" id="region-active-pill"></div>
+                    <button class="region-tab-btn active" data-region="indian">
+                        <i data-lucide="map-pin"></i>
+                        <span>Indian Edition</span>
+                    </button>
+                    <button class="region-tab-btn" data-region="world">
+                        <i data-lucide="globe"></i>
+                        <span>World Edition</span>
+                    </button>
+                    <button class="region-tab-btn" data-region="uk">
+                        <i data-lucide="flag"></i>
+                        <span>UK Edition</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HERO SECTION (Featuring Three.js "Perspective Refraction Lens" over Key Story) -->
+        <section class="hero-section" id="politics">
+            <!-- Three.js Canvas Container -->
+            <div class="lens-canvas-container" id="lens-canvas-container" data-src="./assets/hero-bg.png">
+                <!-- Fallback standard image in case JS/WebGL is disabled -->
+                <img src="./assets/hero-bg.png" alt="Featured Story Editorial Graphic" class="hero-fallback-img">
+                <div class="lens-overlay"></div>
+            </div>
+
+            <!-- Hero Typography Content -->
+            <div class="hero-content-wrapper">
+                <div class="hero-text-block glass-element" data-site-content-block="hero">
+                    <!-- Live indicators with premium Saffron tint -->
+                    <div class="category-tag-wrapper">
+                        <span class="live-indicator"><span class="live-dot saffron-pulse"></span> <span data-bind="eyebrow">DEEP PERSPECTIVE</span></span>
+                        <span class="read-time"><i data-lucide="clock"></i> <span data-bind="readtime">9 Min Read</span></span>
+                    </div>
+
+                    <h1 class="hero-title">
+                        <span data-bind="headline">The Illusion of Consensus: Bending the Corporate News Narrative</span>
+                    </h1>
+                    
+                    <p class="hero-summary">
+                        <span data-bind="body">Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.</span>
+                    </p>
+
+                    <!-- Author Details & Meta -->
+                    <div class="hero-meta">
+                        <div class="author-info">
+                            <div class="author-avatar"><i data-lucide="user"></i></div>
+                            <div>
+                                <span class="author-name" data-bind="byline">Aniket Verma</span>
+                                <span class="author-title" data-bind="byline_role">Senior Bias Analyst</span>
+                            </div>
+                        </div>
+                        <a href="#/article/featured-story" class="btn btn-primary" aria-label="Read full analysis">
+                            <span data-bind="cta">Expose The Script</span>
+                            <i data-lucide="arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BENTO BOX SECTION -->
+        <section class="bento-section" id="satire">
+            <div class="section-header" data-site-content-block="ledger_intro">
+                <div class="title-with-accent">
+                    <span class="tag-bar green-bar"></span>
+                    <h2 class="section-title"><span data-bind="heading">The Ledger</span></h2>
+                </div>
+                <p class="section-subtitle"><span data-bind="sub">Dismantling corporate bias and manufactured consent, systematically</span></p>
+            </div>
+
+            <!-- Bento Layout Wrapper for Sidebar + Grid -->
+            <div class="bento-layout-wrapper">
+                <!-- Left Sidebar (Categories Only) -->
+                <aside class="bento-sidebar">
+                    <div class="category-tabs-container" id="category-tabs-container">
+                        <div class="active-indicator-pill" id="category-active-pill"></div>
+                        <button class="category-tab-btn active" data-category="all">
+                            <i data-lucide="layout-grid"></i>
+                            <span>All Chronicles</span>
+                        </button>
+                        <button class="category-tab-btn" data-category="Politics">
+                            <i data-lucide="landmark"></i>
+                            <span>Politics</span>
+                        </button>
+
+                        <button class="category-tab-btn" data-category="Tech">
+                            <i data-lucide="cpu"></i>
+                            <span>Tech</span>
+                        </button>
+                        <button class="category-tab-btn" data-category="Finance">
+                            <i data-lucide="circle-dollar-sign"></i>
+                            <span>Finance</span>
+                        </button>
+                        <button class="category-tab-btn" data-category="Entertainment">
+                            <i data-lucide="clapperboard"></i>
+                            <span>Entertainment</span>
+                        </button>
+                        <button class="category-tab-btn" data-category="Health">
+                            <i data-lucide="heart-pulse"></i>
+                            <span>Health</span>
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- THE ASYMMETRICAL BENTO GRID -->
+                <div class="bento-grid" id="dynamic-bento-grid">
+
+                <!-- 1. BENTO CARD: MAJOR ARTICLE (Span 2x2 on desktop, visual & narrative powerhouse) -->
+                <!-- BACKEND DEV: Bind article database fields here (e.g. tags, titles, summaries, timestamps) -->
+                <article class="bento-card bento-span-2x2 glass-element" id="card-1" data-site-content-block="featured" data-featured-id="dpdp">
+                    <div class="card-visual">
+                        <!-- High contrast dark gradient filter for text legibility -->
+                        <div class="card-image-bg" style="background-image: url('./assets/hero-bg.png'); filter: saturate(0.85) contrast(1.15);"></div>
+                        <div class="card-tag saffron-bg" data-bind="category">Politics</div>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-time"><i data-lucide="clock"></i> <span data-bind="ago">4 Hours Ago</span></span>
+                        <h3 class="card-title">
+                            <a href="#" class="stretched-link" data-bind="title">Consent Under the Microscope: Decoding Startup Panic Over the DPDP Mandates</a>
+                        </h3>
+                        <p class="card-summary">
+                            Tech startups and legacy aggregators are suddenly finding out that obtaining "explicit and clear user consent" is incredibly inconvenient when you actually have to tell users what you plan to do with their profiles.
+                        </p>
+                        <div class="card-footer-meta">
+                            <span class="card-author">By <span data-bind="author">Devendra Joshi</span></span>
+                            <span class="card-action"><i data-lucide="arrow-up-right"></i></span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 2. BENTO CARD: DYNAMIC DATA VISUALIZATION SUMMARY (Span 1x2 on desktop) -->
+                <!-- BACKEND DEV: Populate chart datasets dynamically or inject real-time values from API -->
+                <section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">
+                    <div class="card-header-tag">
+                        <span class="card-tag green-bg">Narrative Index</span>
+                        <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>
+                    </div>
+                    <div class="card-body data-viz-body">
+                        <h3 class="card-title">Rhetoric Meter</h3>
+                        <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>
+                        
+                        <!-- Premium Embedded SVG Data Visualisation Graphic (Micro-animated) -->
+                        <div class="data-graph-container">
+                            <svg class="data-svg" viewBox="0 0 200 100">
+                                <defs>
+                                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>
+                                        <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>
+                                    </linearGradient>
+                                </defs>
+                                <!-- Grid Lines -->
+                                <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                                <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                                <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                                
+                                <!-- Filled Area -->
+                                <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />
+                                <!-- Stroke Line -->
+                                <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />
+                                
+                                <!-- Active Point -->
+                                <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />
+                                <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />
+                            </svg>
+                        </div>
+                        
+                        <div class="metrics-grid" data-site-content-block="rhetoric">
+                            <div class="metric-block">
+                                <span class="metric-val" data-bind="value">84.2%</span>
+                                <span class="metric-lbl" data-bind="label">Sensational Bias</span>
+                            </div>
+                            <div class="metric-block">
+                                <span class="metric-val green-text" data-bind="yoy">+12.4% YoY</span>
+                                <span class="metric-lbl" data-bind="caption">Hyperbole saturation</span>
+                            </div>
+                        </div>
+                        <p class="card-summary small-summary">
+                            Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 3. BENTO CARD: MANIFESTO QUOTE (Span 1x1 on desktop) -->
+                <!-- BACKEND DEV: Bind editorial opinions, quotes, and expert details -->
+                <blockquote class="bento-card bento-span-1x1 glass-element quote-card" id="manifesto" data-site-content-block="manifesto">
+                    <div class="quote-header">
+                        <i data-lucide="quote" class="quote-icon"></i>
+                        <span class="card-tag" data-bind="heading">Our Manifesto</span>
+                    </div>
+                    <div class="quote-body">
+                        <p class="quote-text">
+                            <span data-bind="body">"Objective journalism is a corporate shield. The moment you select which stories to cover or which quotes to crop, bias exists. We just choose to be honest about ours."</span>
+                        </p>
+                    </div>
+                    <div class="quote-author-meta">
+                        <span class="quote-author-name" data-bind="author">Dr. Rupa Murthy</span>
+                        <span class="quote-author-title" data-bind="role">Editor-in-Chief, Honestly Biased</span>
+                    </div>
+                </blockquote>
+
+                <!-- 4. BENTO CARD: QUICK FEED NEWS (Span 1x1 on desktop) -->
+                <!-- BACKEND DEV: Loop and output latest quick short bullet updates -->
+                <aside class="bento-card bento-span-1x1 glass-element feed-card" id="card-4">
+                    <div class="feed-header">
+                        <h3 class="feed-title"><i data-lucide="zap" class="feed-icon"></i> Express Bias</h3>
+                        <span class="feed-badge">LIVE</span>
+                    </div>
+                    <div class="feed-container">
+                        <div class="feed-item">
+                            <span class="feed-time">17:42</span>
+                            <p class="feed-content">FinMin launches rigorous desk-to-desk search for lost file containing standard economic logic.</p>
+                        </div>
+                        <div class="feed-item">
+                            <span class="feed-time">16:15</span>
+                            <p class="feed-content">Space agency confirms successful deployment of sensor engineered to detect political hot air.</p>
+                        </div>
+                        <div class="feed-item">
+                            <span class="feed-time">15:08</span>
+                            <p class="feed-content">Telecom operators reach historic agreement to collectively drop calls more efficiently.</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- 5. BENTO CARD: AUDIO/PODCAST TILE (Span 1x1 on desktop) -->
+                <!-- BACKEND DEV: Bind dynamic audio player URL, length, and title -->
+                <section class="bento-card bento-span-1x1 glass-element audio-card" id="card-5" data-site-content-block="podcast">
+                    <div class="audio-header">
+                        <span class="card-tag saffron-bg" data-bind="label">Podcast</span>
+                        <span class="audio-duration" data-bind="runtime">34:10 Min</span>
+                    </div>
+                    <div class="audio-body">
+                        <h3 class="card-title" data-bind="title">Honestly Biased Dialogues: Dissecting Editorial Gag Orders</h3>
+                        <p class="card-summary small-summary" data-bind="blurb">
+                            We sit down with former editors to chart how corporate balance sheets silently dictate the limits of prime-time debates.
+                        </p>
+                    </div>
+                    <div class="audio-player-ui">
+                        <button class="play-btn-circle" aria-label="Play podcast episode" data-bind="play_label">
+                            <i data-lucide="play" class="play-icon"></i>
+                        </button>
+                        <div class="audio-progress-bar">
+                            <div class="audio-progress" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. BENTO CARD: HIGH IMPACT STORY WITH VIDEO PREVIEW (Span 2x1 on desktop) -->
+                <!-- BACKEND DEV: Inject dynamic video asset, thumbnail, and category details -->
+                <article class="bento-card bento-span-2x1 glass-element video-preview-card" id="card-6" data-site-content-block="featured" data-featured-id="varanasi">
+                    <div class="card-visual">
+                        <!-- HTML5 Video Component with Fallback Poster -->
+                        <video class="card-video-element" id="card-6-video" preload="metadata" poster="./assets/hero-bg.png" playsinline loop muted>
+                            <source src="https://assets.mixkit.co/videos/preview/mixkit-handloom-weaver-working-on-a-loom-41885-large.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <span class="card-tag green-bg" data-bind="category">Tech</span>
+                        <span class="video-duration-badge"><i data-lucide="clock" style="width:10px; height:10px; display:inline-block; margin-right:2px; vertical-align:middle;"></i><span data-bind="meta">14:20</span></span>
+                        
+                        <!-- Floating Video Play Overlay -->
+                        <button class="video-play-overlay" aria-label="Play documentary video preview">
+                            <span class="ripple-outer"></span>
+                            <span class="ripple-inner"><i data-lucide="play" class="video-icon"></i></span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-time"><i data-lucide="clock"></i> <span data-bind="ago">1 Day Ago</span></span>
+                        <h3 class="card-title">
+                            <a href="#" data-bind="title">The Craftsmen of Varanasi: Weaving Through Algorithmic Disruption</a>
+                        </h3>
+                        <p class="card-summary">
+                            Our special report tracking how traditional handloom weavers are resisting automated replica algorithms and mass-produced synthetic chains.
+                        </p>
+                        <div class="card-footer-meta">
+                            <span class="card-author">By <span data-bind="author">Meenakshi Iyer</span></span>
+                            <span class="card-action"><i data-lucide="video"></i> <span data-bind="doc_meta">14:20 Documentary</span></span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 7. BENTO CARD: INTERACTIVE CIVIC POLL (Span 1x1 on desktop) -->
+                <!-- BACKEND DEV: Bind active survey question, options, and track votes in state -->
+                <section class="bento-card bento-span-1x1 glass-element poll-card" id="card-7" data-site-content-block="poll">
+                    <div class="poll-header">
+                        <h3 class="poll-title"><i data-lucide="vote" class="poll-icon"></i> <span data-bind="heading">Narrative Pulse</span></h3>
+                        <span class="card-tag">Interactive</span>
+                    </div>
+                    <div class="poll-body">
+                        <p class="poll-question" data-bind="prompt">Do you believe corporate media news outlets can ever deliver genuinely objective reporting?</p>
+                        
+                        <form class="poll-form" id="civic-poll-form">
+                            <button type="button" class="poll-option-btn" data-poll-id="no" data-bind="option_template">
+                                <span class="poll-option-text" data-bind="label">No, ownership dictates bias</span>
+                                <span class="poll-bar" style="width: 74%;"></span>
+                                <span class="poll-percentage">74%</span>
+                            </button>
+                            <button type="button" class="poll-option-btn" data-poll-id="yes" data-bind="option_template">
+                                <span class="poll-option-text" data-bind="label">Yes, under regulatory separation</span>
+                                <span class="poll-bar" style="width: 18%;"></span>
+                                <span class="poll-percentage">18%</span>
+                            </button>
+                            <button type="button" class="poll-option-btn" data-poll-id="myth" data-bind="option_template">
+                                <span class="poll-option-text" data-bind="label">Impartiality is a systemic myth anyway</span>
+                                <span class="poll-bar" style="width: 8%;"></span>
+                                <span class="poll-percentage">8%</span>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 8. BENTO CARD: TECHNOLOGY BRIEFING (Span 1x1 on desktop) -->
+                <!-- BACKEND DEV: Dynamic article template -->
+                <article class="bento-card bento-span-1x1 glass-element" id="card-8" data-site-content-block="featured" data-featured-id="agri">
+                    <div class="card-body header-only-body">
+                        <span class="card-tag" data-bind="category">Tech</span>
+                        <h3 class="card-title">
+                            <a href="#" data-bind="title">The Agri-Tech Bubble: Edge Sensors Sold to Smallholders Lacking Water Security</a>
+                        </h3>
+                        <p class="card-summary small-summary">
+                            How tech venture capitalists are pushing machine-learning soil monitoring before basic irrigation infrastructures are deployed.
+                        </p>
+                        <div class="card-footer-meta">
+                            <span class="card-author" data-bind="author_prefix">By <span data-bind="author">Rohan Gupta</span></span>
+                            <span class="card-time" data-bind="ago">2 Days Ago</span>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+            </div> <!-- End of bento-layout-wrapper -->
+        </section>
+
+        <!-- ARTICLE DETAIL SECTION (SPA Page View) -->
+        <section class="article-detail-section" id="article-detail-section" style="display: none; padding: 120px 0 80px 0; min-height: 80vh;">
+            <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 24px;">
+                <div style="margin-bottom: 32px;">
+                    <a href="#/" class="btn btn-secondary back-btn" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none; padding: 10px 20px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); color: var(--text-primary); transition: background 0.2s;">
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                        <span>Back to Chronicles</span>
+                    </a>
+                </div>
+                
+                <div class="article-detail-grid" style="max-width: 1050px; margin: 0 auto;">
+                    <article class="article-detail-card glass-element" style="padding: 48px; border-radius: 16px; border: 1.5px solid var(--border-glass); box-shadow: var(--glass-shadow); position: relative; background: var(--bg-card); backdrop-filter: blur(20px);">
+                        <!-- Category and Time Meta -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+                            <span class="modal-tag saffron-bg" id="detail-category" style="font-size: 0.8rem; padding: 6px 12px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Politics</span>
+                            <span id="detail-time" style="color: var(--text-muted); font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
+                                <i data-lucide="clock" style="width: 14px; height: 14px;"></i> 12:25 am IST
+                            </span>
+                        </div>
+                        
+                        <!-- Headline Title -->
+                        <h1 id="detail-title" style="font-family: var(--font-heading); font-size: 2.75rem; font-weight: 800; line-height: 1.2; margin-bottom: 24px; color: var(--text-primary); text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                            Headline Placeholder
+                        </h1>
+                        
+                        <!-- Author Badge -->
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1.5px solid rgba(255,255,255,0.06);">
+                            <span class="detail-author" style="font-size: 0.95rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+                                <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i> Audited by Honestly Biased AI Engine
+                            </span>
+                        </div>
+                        
+                        <!-- Media Container -->
+                        <div id="detail-media-container" style="margin-bottom: 36px; width: 100%; border-radius: 8px; overflow: hidden; display: none; border: 1.5px solid var(--border-glass);">
+                            <!-- Image or Instagram iframe will be injected here -->
+                        </div>
+                        
+                        <!-- Blog Post Body -->
+                        <div class="blog-post-content" id="detail-content" style="font-size: 1.15rem; line-height: 1.85; color: var(--text-secondary); margin-bottom: 40px; font-weight: 400; letter-spacing: -0.003em;">
+                            <!-- Paragraphs will be dynamically injected here -->
+                        </div>
+
+                        <!-- Footer metadata, original source (but no direct redirection link) -->
+                        <div style="padding-top: 28px; border-top: 1.5px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                            <span id="detail-source" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">
+                                Source: Reuters
+                            </span>
+                            
+                            <!-- Link to Original Source for attribution, but it is not the main action -->
+                            <a id="detail-original-link" href="#" target="_blank" style="font-size: 0.9rem; color: var(--accent-red); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: opacity 0.2s;">
+                                <span>Attribution Source</span>
+                                <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PREMIUM HIGH-CONTRAST EDITORIAL FOOTER -->
+    <footer class="editorial-footer">
+        <div class="footer-grid">
+            <!-- Footer Brand & Mission -->
+            <div class="footer-brand-column">
+                <a href="#" class="footer-logo">
+                    <img src="./assets/logo.png" alt="Honestly Biased Logo" class="logo-png-footer">
+                </a>
+                <p class="mission-statement" data-site-content-block="footer">
+                    <span data-bind="mission">Honestly Biased is a reader-supported, digital-first commentary hub. We reject the corporate performance of neutral objectivity. We believe in providing transparent, analytical, and uncompromisingly honest perspectives on politics, satire, and media power structures in India.</span>
+                </p>
+            </div>
+
+            <!-- Chronicles/Categories Links -->
+            <div class="footer-links-column">
+                <h4 class="footer-heading">Sections</h4>
+                <ul class="footer-links-list">
+                    <li><a href="#/politics">Politics</a></li>
+
+                    <li><a href="#/tech">Tech</a></li>
+                    <li><a href="#/finance">Finance</a></li>
+                    <li><a href="#/entertainment">Entertainment</a></li>
+                    <li><a href="#/health">Health</a></li>
+                </ul>
+            </div>
+
+            <!-- Support & Governance -->
+            <div class="footer-links-column" data-site-content-block="standards">
+                <h4 class="footer-heading">Standards</h4>
+                <ul class="footer-links-list" id="standards-list">
+                    <li><a href="#manifesto">Our Manifesto</a></li>
+                    <li><a href="#">Editorial Standards</a></li>
+                    <li><a href="#">Independent Funding Audit</a></li>
+                    <li><a href="#">Financial Integrity reports</a></li>
+                    <li><a href="#">Join the Collective</a></li>
+                </ul>
+            </div>
+
+            <!-- Premium Newsletter Signup Column -->
+            <div class="footer-newsletter-column">
+                <h4 class="footer-heading">Subscribe to the Ledger</h4>
+                <p class="newsletter-subtext">Receive our daily, sharp analytical briefing direct to your inbox. No filters, no corporate jargon.</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <div class="input-group">
+                        <input type="email" placeholder="Enter your email address" required aria-label="Email address for newsletter subscription">
+                        <button type="submit" class="newsletter-btn" aria-label="Submit email address">
+                            <i data-lucide="arrow-right"></i>
+                        </button>
+                    </div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" required>
+                        <span class="checkbox-custom"></span>
+                        <span class="label-text">I support transparent, reader-funded commentary.</span>
+                    </label>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer Bottom Bar -->
+        <div class="footer-bottom">
+            <p class="copyright">
+                &copy; 2026 Honestly Biased Digital Media Trust. Reader supported, fiercely independent.
+            </p>
+            <div class="social-links" aria-label="Social Media Connections">
+                <a href="https://www.facebook.com/honestlybiasedOfficial" target="_blank" rel="noopener noreferrer" aria-label="Facebook connection">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
+                </a>
+                <a href="#" aria-label="Twitter connection">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="#" aria-label="Youtube channel">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+                <a href="#" aria-label="Podcast channel">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2c-3.31 0-6 2.69-6 6v5c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6zm4 11c0 2.21-1.79 4-4 4s-4-1.79-4-4V8c0-2.21 1.79-4 4-4s4 1.79 4 4v5zm-4 7c-4.42 0-8-3.58-8-8H2c0 5.14 3.82 9.4 8.88 9.94v2.06h2.24v-2.06c5.06-.54 8.88-4.8 8.88-9.94h-2c0 4.42-3.58 8-8 8z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PREMIUM GLASSMORPHIC ARTICLE AUDIT READER MODAL -->
+    <div class="audit-modal" id="audit-modal" aria-hidden="true" role="dialog">
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content glass-element">
+            <button class="modal-close-btn" id="modal-close-btn" aria-label="Close audit reader">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="modal-header">
+                <span class="modal-tag saffron-bg" id="modal-category">Politics</span>
+                <span class="modal-time" id="modal-time"><i data-lucide="clock"></i> Just Now</span>
+            </div>
+            <h2 class="modal-title" id="modal-title">
+                FinMin Confirms New Tax Framework Remains Perfectly Logical to Precisely Three Statisticians
+            </h2>
+            <div class="modal-meta">
+                <span class="modal-author"><i data-lucide="shield-check"></i> Audited by Honestly Biased AI Engine</span>
+                <span class="modal-source" id="modal-source">Source: Economic Reporter</span>
+            </div>
+            
+            <!-- Dynamic Media Container (Image or Instagram Embed) -->
+            <div id="modal-media-container" style="display: none; width: 100%; border-radius: var(--border-radius-sm); overflow: hidden; margin: 20px 0;"></div>
+            
+            <!-- Custom Premium Bias Callout Box -->
+            <div class="bias-audit-callout">
+                <h4 class="callout-heading"><i data-lucide="search-code"></i> AI NARRATIVE AUDIT</h4>
+                <p class="callout-text" id="modal-bias-audit">
+                    Ministers frame procedural hurdles as 'efficiency improvements' to mask standard operational overhead.
+                </p>
+            </div>
+            
+            <div class="modal-body-content">
+                <p id="modal-summary">
+                    The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.
+                </p>
+            </div>
+            
+            <div class="modal-footer">
+                <a href="#" target="_blank" class="btn btn-secondary" id="modal-original-link">
+                    <span>Inspect Raw Corporate Spin</span>
+                    <i data-lucide="external-link"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Three.js Library CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Dynamic Theme and Page Logic -->
+    <script src="app.js"></script>
+
+    <!-- Custom Three.js "Perspective Refraction Lens" Glass Displacement Effect -->
+    <script src="lens-effect.js"></script>
+
+    <!-- Initializing Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
