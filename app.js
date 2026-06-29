@@ -3,6 +3,115 @@
    Handles: Theme Toggling, Mobile Nav, Scroll Reveals, Civic Poll, Form Submit
    ========================================================================== */
 
+// ============================================================================
+// SITE CONTENT HYDRATION - replace [data-bind=...] text nodes with values
+// fetched from /api/site-content on DOMContentLoaded. Each block exists in
+// index.html with [data-site-content-block="..."] and inner [data-bind="..."]
+// spans. Missing blocks render their original HTML as fallback.
+// ============================================================================
+async function hydrateSiteContent() {
+    let payload = {};
+    try {
+        const res = await fetch('/api/site-content?_t=' + Date.now());
+        if (res.ok) payload = await res.json() || {};
+    } catch (e) {
+        // network down — fall through, blocks keep baked defaults
+    }
+
+    // Walk all blocks. Each block scope makes bind keys scoped.
+    for (const blockNode of document.querySelectorAll('[data-site-content-block]')) {
+        const blockKey = blockNode.dataset.siteContentBlock;
+        const data = payload[blockKey];
+        if (!data) continue; // no DB row -> keep HTML fallback
+
+        // === Featured-cards: lookup matched doc by data-featured-id ===
+        // The CMS payload key is "featured" (one row, array of docs each with an
+        // id). Each card in the page declares data-featured-id="dpdp|varanasi|..."
+        // and we look the doc up by that id, so the bind spans reflect that doc.
+        if (blockKey === 'featured' || blockKey === 'featured_card') {
+            const fid = blockNode.dataset.featuredId;
+            const docs = Array.isArray(data.docs) ? data.docs : [];
+            const doc = docs.find(d => d && d.id === fid);
+            if (!doc) continue;
+            blockNode.querySelectorAll('[data-bind]').forEach(node => {
+                const k = node.dataset.bind;
+                if (doc[k] != null) node.textContent = String(doc[k]);
+            });
+            continue;
+        }
+
+        // === Poll: rebuild the option rows from data.options array ===
+        if (blockKey === 'poll') {
+            const form = blockNode.querySelector('.poll-form');
+            if (form && Array.isArray(data.options)) {
+                // hydrate header / prompt text
+                blockNode.querySelectorAll('[data-bind]').forEach(node => {
+                    if (node.dataset.bind === 'option_template') return;
+                    const k = node.dataset.bind;
+                    if (data[k] != null) node.textContent = String(data[k]);
+                });
+                // rebuild the three option buttons
+                form.innerHTML = '';
+                data.options.slice(0, 6).forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'poll-option-btn';
+                    btn.setAttribute('data-poll-id', opt.id || '');
+                    btn.innerHTML =
+                        '<span class="poll-option-text">' + escapeHtml(opt.label || '') + '</span>' +
+                        '<span class="poll-bar" style="width: ' + Number(opt.pct || 0) + '%;"></span>' +
+                        '<span class="poll-percentage">' + Number(opt.pct || 0) + '%</span>';
+                    form.appendChild(btn);
+                });
+            }
+            continue;
+        }
+
+        // === Standards list: rebuild the <ul> from data.items ===
+        if (blockKey === 'standards' && Array.isArray(data.items)) {
+            const ul = blockNode.querySelector('ul');
+            if (ul) {
+                ul.innerHTML = '';
+                data.items.slice(0, 12).forEach(item => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.textContent = String(item || '');
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                });
+            }
+            continue;
+        }
+
+        // === Generic scalar block: replace each leaf's textContent ===
+        blockNode.querySelectorAll('[data-bind]').forEach(node => {
+            const k = node.dataset.bind;
+            if (data[k] != null) node.textContent = String(data[k]);
+        });
+    }
+}
+
+function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    // Build entities from char codes so the file source itself never
+    // contains literal "<", ">", "&", """, "'" — those would be
+    // unescaped by editors / patch tools in transit.
+    var E = {
+        amp:   String.fromCharCode(38),                                 // &
+        lt:    String.fromCharCode(38, 108, 116, 59),                   // <
+        gt:    String.fromCharCode(38, 103, 116, 59),                   // >
+        quot:  String.fromCharCode(38, 113, 117, 111, 116, 59),        // "
+        apos:  String.fromCharCode(38, 35, 49, 48, 55, 59)             // '
+    };
+    return String(s)
+        .replace(/&/g, E.amp)
+        .replace(/</g, E.lt)
+        .replace(/>/g, E.gt)
+        .replace(/"/g, E.quot)
+        .replace(/'/g, E.apos);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // ==========================================================================
@@ -337,8 +446,18 @@ document.addEventListener('DOMContentLoaded', () => {
     civicPollHTML = card7 ? card7.outerHTML : "";
 
     async function loadDynamicArticles() {
+        console.log("📡 Fetching site_content blocks first, then live feed...");
+
+        // ------------------------------------------------------------
+        // 1. Hydrate static editorial blocks from CMS-controlled DB rows.
+        //    Must run BEFORE the bento observer attaches so that
+        //    IntersectionObserver entries aren't missed on a fast re-render.
+        // ------------------------------------------------------------
+        try { await hydrateSiteContent(); }
+        catch (e) { console.warn('site_content hydration failed:', e); }
+
         console.log("📡 Attempting to fetch live AI-calibrated Honestly Biased feed...");
-        
+
         try {
             // Call the local backend server (running on port 3000)
             const response = await fetch('/api/honestly-biased-feed');
@@ -417,115 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tickerTrack.innerHTML = html;
             }
 
-            // Populate offline mockup articles so category filtering works offline
-            allArticles = [
-                {
-                    id: "gnews_1",
-                    category: "Finance",
-                    aiheadline: "FinMin Confirms New Tax Framework Remains Perfectly Logical to Precisely Three Statisticians",
-                    aisummary: "The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.",
-                    biasaudit: "Ministers frame procedural hurdles as 'efficiency improvements' to mask standard operational overhead.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "FIFA World Cup 2026 opening ceremony Highlights",
-                    timeago: "12:25 am IST",
-                    author: "Honestly Biased AI Engine (Gemini)",
-                    authortype: "ai",
-                    imageurl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
-                    originalurl: "#",
-                    fullblog: `<p>The Ministry of Finance has successfully updated the national tax bureaucracy. The revised forms are designed to optimize reporting speeds, ensuring that only specialized algorithms can successfully file them.</p><p>Critics point out that this effectively locks out average taxpayers from filing independently, forcing them into paid private software ecosystems.</p>`
-                },
-                {
-                    id: "gnews_2",
-                    category: "Tech",
-                    aiheadline: "Consent Under the Microscope: Startup Panic Climbs Over DPDP Compliance Hurdles",
-                    aisummary: "Tech startups are suddenly discovering that acquiring 'explicit user consent' is a massive operational headache when they actually have to disclose their backend monetisation pipelines. The Bangalore tech hub is scrambling for regulatory loopholes.",
-                    biasaudit: "Corporate platforms frame user privacy compliance as an 'innovation tax' to protect high-margin ad trackers.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "Startup Compliance Hurdles",
-                    timeago: "12:13 am IST",
-                    author: "Honestly Biased AI Engine (Gemini)",
-                    authortype: "ai",
-                    imageurl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
-                    originalurl: "#",
-                    fullblog: `<p>Tech startups are suddenly discovering that acquiring 'explicit user consent' is a massive operational headache when they actually have to disclose their backend monetisation pipelines. The Bangalore tech hub is scrambling for regulatory loopholes.</p><p>Under the new DPDP mandates, non-compliance carries heavy penalties, prompting a lobbying push to water down the definitions of data processing.</p>`
-                },
-                {
-                    id: "gnews_3",
-                    category: "Tech",
-                    aiheadline: "The Agri-Tech Bubble: Edge-Computing Moisture Sensors Sold to Farmers Lacking Basic Water Pipelines",
-                    aisummary: "Venture capitalists have successfully dumped $40 million into high-tech soil monitoring sensors. The startup is prioritizing machine-learning algorithms over basic, physical water irrigation structures in drought districts.",
-                    biasaudit: "VC narrative prioritizes selling proprietary AI sensors to smallholders before sorting basic agricultural resources.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "Agri-Tech Bubble",
-                    timeago: "12:10 am IST",
-                    author: "Honestly Biased AI Engine (Gemini)",
-                    authortype: "ai",
-                    imageurl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
-                    originalurl: "#",
-                    fullblog: `<p>Venture capitalists have successfully dumped $40 million into high-tech soil monitoring sensors. The startup is prioritizing machine-learning algorithms over basic, physical water irrigation structures in drought districts.</p><p>This disconnect highlights a broader trend where Silicon Valley-style tech solutions are force-fitted onto infrastructure deficits.</p>`
-                },
-                {
-                    id: "gnews_4",
-                    category: "Politics",
-                    aiheadline: "The Illusion of Consensus: Bending the Corporate News Narrative",
-                    aisummary: "Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.",
-                    biasaudit: "Corporate media news coverage framing policy as consensual to protect advertising dependencies.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "Illusion of Consensus",
-                    timeago: "11:59 pm IST",
-                    author: "Honestly Biased Editorial Board (Admin)",
-                    authortype: "admin",
-                    imageurl: "./assets/hero-bg.png",
-                    originalurl: "#",
-                    fullblog: `<p>Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.</p>`
-                },
-                {
-                    id: "gnews_5",
-                    category: "Health",
-                    aiheadline: "Ebola Outbreak: Spreading into New Areas in Northeast DR Congo, WHO Warns",
-                    aisummary: "The Ebola outbreak in the northeastern Democratic Republic of Congo is spreading into new areas, the World Health Organization warned. Isolation bed capacity remains far below anticipated needs.",
-                    biasaudit: "Mainstream networks underreport public health crises in global South until they threaten Western travel corridors.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "Ebola Outbreak",
-                    timeago: "11:58 pm IST",
-                    author: "Honestly Biased AI Engine (Gemini)",
-                    authortype: "ai",
-                    imageurl: "https://images.unsplash.com/photo-1584037672826-6044a5e3c7a9?auto=format&fit=crop&w=800&q=80",
-                    originalurl: "#",
-                    fullblog: `<p>The Ebola outbreak in the northeastern Democratic Republic of Congo is spreading into new areas, the World Health Organization warned. Isolation bed capacity remains far below anticipated needs.</p><p>Medical resources are severely strained, and international aid agencies are urging faster deployment of containment personnel.</p>`
-                },
-                {
-                    id: "gnews_6",
-                    category: "Politics",
-                    aiheadline: "The Carbon Syndicate: Auditing Global Offset Schemes",
-                    aisummary: "Corporate offset programs are revealed to be mostly phantom forests. Underneath, paper offsets allow high-polluting sectors to trade credits without modifying real operational emissions.",
-                    biasaudit: "Consensus reporting structures frame auditing discrepancies as minor accounting adjustments.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "The Carbon Syndicate: Auditing Global Offset Schemes",
-                    timeago: "11:50 pm IST",
-                    author: "Honestly Biased Editorial Board (Admin)",
-                    authortype: "admin",
-                    imageurl: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
-                    originalurl: "#",
-                    fullblog: `<p>Corporate offset programs are revealed to be mostly phantom forests. Underneath, paper offsets allow high-polluting sectors to trade credits without modifying real operational emissions.</p>`
-                },
-                {
-                    id: "gnews_7",
-                    category: "Entertainment",
-                    aiheadline: "FIFA 2026 Opening Spectacle: Nora Fatehi and Shakira Front Massive Concert Event",
-                    aisummary: "Nora Fatehi performed in Canada and Shakira performed in Mexico as FIFA kicked off its triple-nation opening spectacle. The massive corporate concert is designed to project global unity while distracting from licensing controversies.",
-                    biasaudit: "Media outlets focus on celebrity choreography to crowd out coverage of sports governance auditing and local stadium debt.",
-                    originalsource: "Honestly Biased Editorial Board",
-                    originaltitle: "FIFA 2026 Opening Spectacle",
-                    timeago: "11:45 pm IST",
-                    author: "Honestly Biased AI Engine (Gemini)",
-                    authortype: "ai",
-                    imageurl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80",
-                    originalurl: "#",
-                    fullblog: `<p>Nora Fatehi performed in Canada and Shakira performed in Mexico as FIFA kicked off its triple-nation opening spectacle. The massive corporate concert is designed to project global unity while distracting from licensing controversies.</p>`
-                }
-            ];
-
+            allArticles = [];
             handleRouting(true);
         }
     }
@@ -645,6 +656,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Track active date filter option: 'today' (default), 'yesterday', 'all', or a specific YYYY-MM-DD string
+    let activeDateFilter = 'today';
+
     // Dynamic Asymmetrical Bento Grid compiler
     function renderArticles(regionFilter, categoryFilter) {
         if (!gridContainer) return;
@@ -652,16 +666,48 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear existing grid
         gridContainer.innerHTML = "";
 
-        // Filter articles by both region and category
-        const filteredArticles = allArticles.filter(art => {
+        // 1. Sort all articles newest-first by publishdate or ID
+        const sortedArticles = [...allArticles].sort((a, b) => {
+            const timeA = a.publishdate ? new Date(a.publishdate).getTime() : parseFloat(String(a.id).replace(/\D/g, '')) || 0;
+            const timeB = b.publishdate ? new Date(b.publishdate).getTime() : parseFloat(String(b.id).replace(/\D/g, '')) || 0;
+            return timeB - timeA;
+        });
+
+        // 2. Filter articles by region, category and date
+        const filteredArticles = sortedArticles.filter(art => {
             const matchRegion = (art.region || 'indian').toLowerCase().trim() === regionFilter.toLowerCase().trim();
             const matchCategory = categoryFilter === 'all' 
                 ? true 
                 : art.category.toLowerCase().trim() === categoryFilter.toLowerCase().trim();
-            return matchRegion && matchCategory;
+            
+            if (!matchRegion || !matchCategory) return false;
+
+            // Date filtering rules:
+            const artDate = art.publishdate ? new Date(art.publishdate) : new Date();
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+
+            const isSameDate = (d1, d2) => 
+                d1.getFullYear() === d2.getFullYear() && 
+                d1.getMonth() === d2.getMonth() && 
+                d1.getDate() === d2.getDate();
+
+            if (activeDateFilter === 'today') {
+                return isSameDate(artDate, today);
+            } else if (activeDateFilter === 'yesterday') {
+                return isSameDate(artDate, yesterday);
+            } else if (activeDateFilter === 'all') {
+                return true;
+            } else {
+                // Specific YYYY-MM-DD custom filter
+                const [y, m, d] = activeDateFilter.split('-').map(Number);
+                const filterD = new Date(y, m - 1, d);
+                return isSameDate(artDate, filterD);
+            }
         });
 
-        console.log(`🎯 Filtering: Region "${regionFilter}", Category "${categoryFilter}" matched ${filteredArticles.length} articles.`);
+        console.log(`🎯 Filtering: Region "${regionFilter}", Category "${categoryFilter}", Date "${activeDateFilter}" matched ${filteredArticles.length} articles.`);
 
         if (filteredArticles.length === 0) {
             // Display empty state
@@ -1375,6 +1421,70 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <p>As this situation develops, Honestly Biased will continue tracking the policy shifts, corporate lobbying, and economic pressures that shape the final outcome. Stay tuned for further updates as our AI and editorial desks decode the next cycle of press coverage.</p>
         `;
+    }
+
+    // Set up Date Filter button triggers
+    const todayBtn = document.getElementById('filter-today');
+    const yesterdayBtn = document.getElementById('filter-yesterday');
+    const allDatesBtn = document.getElementById('filter-all-dates');
+    const customDateInput = document.getElementById('filter-custom-date');
+
+    function updateDateFilterUI(activeBtn) {
+        [todayBtn, yesterdayBtn, allDatesBtn].forEach(btn => {
+            if (btn) {
+                btn.classList.remove('active');
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'transparent';
+                btn.style.color = 'var(--text-muted)';
+            }
+        });
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+            activeBtn.style.background = 'rgba(255,255,255,0.03)';
+            activeBtn.style.borderColor = 'var(--border-color)';
+            activeBtn.style.color = 'var(--text-primary)';
+        }
+    }
+
+    if (todayBtn) {
+        todayBtn.addEventListener('click', () => {
+            activeDateFilter = 'today';
+            updateDateFilterUI(todayBtn);
+            if (customDateInput) customDateInput.value = '';
+            const route = parseHashRoute() || { region: 'indian', category: 'all' };
+            renderArticles(route.region, route.category);
+        });
+    }
+
+    if (yesterdayBtn) {
+        yesterdayBtn.addEventListener('click', () => {
+            activeDateFilter = 'yesterday';
+            updateDateFilterUI(yesterdayBtn);
+            if (customDateInput) customDateInput.value = '';
+            const route = parseHashRoute() || { region: 'indian', category: 'all' };
+            renderArticles(route.region, route.category);
+        });
+    }
+
+    if (allDatesBtn) {
+        allDatesBtn.addEventListener('click', () => {
+            activeDateFilter = 'all';
+            updateDateFilterUI(allDatesBtn);
+            if (customDateInput) customDateInput.value = '';
+            const route = parseHashRoute() || { region: 'indian', category: 'all' };
+            renderArticles(route.region, route.category);
+        });
+    }
+
+    if (customDateInput) {
+        customDateInput.addEventListener('change', () => {
+            if (customDateInput.value) {
+                activeDateFilter = customDateInput.value; // YYYY-MM-DD format matches input.value
+                updateDateFilterUI(null); // Deselect preset buttons
+                const route = parseHashRoute() || { region: 'indian', category: 'all' };
+                renderArticles(route.region, route.category);
+            }
+        });
     }
 
     // Set up router event listeners

@@ -39,11 +39,13 @@ module.exports = async (req, res) => {
 
     if (method === 'POST') {
       // Create new article – client supplies fields used by admin UI
+      const resolvedPublishDate = body.publishdate ? new Date(body.publishdate).toISOString() : new Date().toISOString();
       const payload = {
         ...body,
         authortype: 'admin', // mark as admin editorial
         author: 'CMS Admin',
-        timeago: new Date().toLocaleTimeString('en-IN', {
+        publishdate: resolvedPublishDate,
+        timeago: new Date(resolvedPublishDate).toLocaleTimeString('en-IN', {
           timeZone: 'Asia/Kolkata',
           hour: '2-digit',
           minute: '2-digit',

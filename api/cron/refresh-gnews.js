@@ -94,7 +94,8 @@ async function rebuildCacheFromGNews() {
         imageurl: raw.image || './assets/hero-bg.png',
         author: 'Honestly Biased AI Engine',
         authortype: 'ai',
-        timeago: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST',
+        publishdate: raw.publishedAt ? new Date(raw.publishedAt).toISOString() : new Date().toISOString(),
+        timeago: new Date(raw.publishedAt || Date.now()).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST',
         createdat: new Date().toISOString(),
         updatedat: new Date().toISOString()
       };

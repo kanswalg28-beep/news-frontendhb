@@ -129,35 +129,7 @@ if (API_KEY) {
 // ==========================================================================
 // 2. RAW NEWS FEED DATABASE (Ingestion input mock)
 // ==========================================================================
-const rawIncomingNews = [
-    {
-        id: 1,
-        title: "Ministry of Finance updates standard guidelines and schedules for digital tax filing systems.",
-        source: "Economic Reporter",
-        rawContent: "The ministry of finance has announced standard updates to administrative tax forms, noting that the revised structures are aimed at optimizing internal reporting algorithms for tax experts.",
-        category: "Politics",
-        timeAgo: "2 Hours Ago",
-        imageUrl: "./assets/hero-bg.png"
-    },
-    {
-        id: 2,
-        title: "Startups raise alerts over high costs of compliance under personal data protection bills.",
-        source: "Tech India",
-        rawContent: "Several startup CEOs in Bangalore expressed concerns that complying with India's new personal data protection regulations would significantly increase cloud data tracking and processing operations budgets.",
-        category: "Politics",
-        timeAgo: "4 Hours Ago",
-        imageUrl: "./assets/hero-bg.png"
-    },
-    {
-        id: 3,
-        title: "Agritech sector secures seed funding for automated soil sensor arrays in dryland farms.",
-        source: "Venture Journal",
-        rawContent: "A group of venture capital funds has invested $40 million in an agri-tech startup selling machine-learning-enabled moisture sensors designed to monitor dry soils in agricultural districts.",
-        category: "Tech",
-        timeAgo: "2 Days Ago",
-        imageUrl: "./assets/hero-bg.png"
-    }
-];
+const rawIncomingNews = [];
 
 const defaultHighlights = [
     "Parliament confirms new tax framework will remain perfectly logical to precisely three statisticians.",
@@ -363,6 +335,14 @@ async function fetchAndAuditGNews() {
     }
 
     const now = Date.now();
+    // OPTION TO DISABLE GNEWS FETCHING:
+    const GNEWS_ENABLED = false; // Set to true to re-enable in future
+
+    if (!GNEWS_ENABLED) {
+        console.log("🔕 GNews API fetch is disabled. Serving custom/cached articles only.");
+        return cacheData.articles.filter(a => a.authorType === 'admin' || a.authorType === 'instagram');
+    }
+
     // B. Check if cache is still fresh (within 12 hours)
     if (cacheData.articles.length > 0 && (now - cacheData.lastUpdated < CACHE_EXPIRY_MS)) {
         console.log("⚡ Disk cache is fresh. Serving GNews articles from disk...");
@@ -477,6 +457,8 @@ async function fetchAndAuditGNews() {
                 articleRegion = articleRegion.toLowerCase().trim();
             }
 
+            const resolvedPublishDate = rawArt.publishedAt ? new Date(rawArt.publishedAt).toISOString() : new Date().toISOString();
+
             updatedArticles.push({
                 id: `gnews_${articleRegion}_${i + 1}`,
                 category: aiOutput.category || tempArticle.category || "Politics",
@@ -487,11 +469,12 @@ async function fetchAndAuditGNews() {
                 fullBlog: aiOutput.fullBlog || "",
                 originalSource: tempArticle.source,
                 originalTitle: rawArt.title,
-                timeAgo: timeString,
+                timeAgo: new Date(resolvedPublishDate).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + " IST",
                 author: "Honestly Biased AI Engine (Gemini)",
                 authorType: "ai",
                 imageUrl: rawArt.image || "./assets/hero-bg.png",
-                originalUrl: rawArt.url || "#"
+                originalUrl: rawArt.url || "#",
+                publishdate: resolvedPublishDate
             });
         }
 
@@ -568,7 +551,7 @@ app.get('/api/honestly-biased-feed', publicApiLimiter, async (req, res) => {
 app.post('/api/admin/articles', adminAuthLimiter, basicAuth, (req, res) => {
     try {
         console.log("📥 Incoming POST request to create new custom article...");
-        const { category, region, aiHeadline, aiSummary, biasAudit, originalSource, imageUrl, originalUrl, instagramShortcode, authorType, fullBlog } = req.body;
+        const { category, region, aiHeadline, aiSummary, biasAudit, originalSource, imageUrl, originalUrl, instagramShortcode, authorType, fullBlog, publishdate } = req.body;
         
         if (!aiHeadline || !aiSummary) {
             return res.status(400).json({ error: "Headline and Summary are required fields." });
@@ -583,22 +566,25 @@ app.post('/api/admin/articles', adminAuthLimiter, basicAuth, (req, res) => {
             }
         }
 
+        const resolvedPublishDate = publishdate ? new Date(publishdate).toISOString() : new Date().toISOString();
+
         const newArticle = {
             id: `admin_${Date.now()}`,
             category: category || "Politics",
             region: region || "indian",
-            aiHeadline: aiHeadline,
-            aiSummary: aiSummary,
-            biasAudit: biasAudit || "Direct Admin Commentary.",
-            fullBlog: fullBlog || "",
-            originalSource: originalSource || "Honestly Biased Editorial Board",
-            originalTitle: aiHeadline,
-            timeAgo: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + " IST",
+            aiheadline: aiHeadline,
+            aisummary: aiSummary,
+            biasaudit: biasAudit || "Direct Admin Commentary.",
+            fullblog: fullBlog || "",
+            originalsource: originalSource || "Honestly Biased Editorial Board",
+            originaltitle: aiHeadline,
+            timeago: new Date(resolvedPublishDate).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + " IST",
             author: authorType === "instagram" ? "Honestly Biased AI Engine (Instagram Ingestion)" : "Honestly Biased Editorial Board (Admin)",
-            authorType: authorType || "admin",
+            authortype: authorType || "admin",
             instagramShortcode: instagramShortcode || null,
-            imageUrl: imageUrl || "./assets/hero-bg.png",
-            originalUrl: originalUrl || "#"
+            imageurl: imageUrl || "./assets/hero-bg.png",
+            originalurl: originalUrl || "#",
+            publishdate: resolvedPublishDate
         };
 
         cacheData.articles.unshift(newArticle); // Put custom editorials at the very front of the grid!
@@ -617,7 +603,7 @@ app.put('/api/admin/articles/:id', adminAuthLimiter, basicAuth, (req, res) => {
     try {
         const { id } = req.params;
         console.log(`📥 Incoming PUT request to update article ID: ${id}...`);
-        const { category, region, aiHeadline, aiSummary, biasAudit, originalSource, imageUrl, originalUrl, instagramShortcode, authorType, fullBlog } = req.body;
+        const { category, region, aiHeadline, aiSummary, biasAudit, originalSource, imageUrl, originalUrl, instagramShortcode, authorType, fullBlog, publishdate } = req.body;
 
         if (!fs.existsSync(CACHE_FILE_PATH)) {
             return res.status(404).json({ error: "No article database found." });
@@ -634,16 +620,22 @@ app.put('/api/admin/articles/:id', adminAuthLimiter, basicAuth, (req, res) => {
         const target = cacheData.articles[articleIndex];
         target.category = category || target.category;
         target.region = region || target.region;
-        target.aiHeadline = aiHeadline || target.aiHeadline;
-        target.aiSummary = aiSummary || target.aiSummary;
-        target.biasAudit = biasAudit !== undefined ? biasAudit : target.biasAudit;
-        target.fullBlog = fullBlog !== undefined ? fullBlog : target.fullBlog;
-        target.originalSource = originalSource || target.originalSource;
-        target.imageUrl = imageUrl || target.imageUrl;
-        target.originalUrl = originalUrl || target.originalUrl;
+        target.aiheadline = aiHeadline || target.aiheadline || target.aiHeadline;
+        target.aisummary = aiSummary || target.aisummary || target.aiSummary;
+        target.biasaudit = biasAudit !== undefined ? biasAudit : (target.biasaudit || target.biasAudit);
+        target.fullblog = fullBlog !== undefined ? fullBlog : (target.fullblog || target.fullBlog);
+        target.originalsource = originalSource || target.originalsource || target.originalSource;
+        target.imageurl = imageUrl || target.imageurl || target.imageUrl;
+        target.originalurl = originalUrl || target.originalurl || target.originalUrl;
         target.instagramShortcode = instagramShortcode !== undefined ? instagramShortcode : target.instagramShortcode;
-        target.authorType = authorType || target.authorType;
-        if (target.authorType === "instagram") {
+        target.authortype = authorType || target.authortype || target.authorType;
+        if (publishdate !== undefined) {
+            target.publishdate = publishdate ? new Date(publishdate).toISOString() : null;
+            if (target.publishdate) {
+                target.timeago = new Date(target.publishdate).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + " IST";
+            }
+        }
+        if (target.authortype === "instagram") {
             target.author = "Honestly Biased AI Engine (Instagram Ingestion)";
         }
 
@@ -1201,6 +1193,51 @@ app.get('/api/admin/subscribers/export', adminAuthLimiter, basicAuth, (req, res)
         console.error("❌ Failed to export subscribers CSV:", err);
         res.status(500).json({ error: "Internal server error exporting subscribers." });
     }
+});
+
+// GET: Read site content
+const SITE_CONTENT_FILE = path.join(__dirname, 'site-content.json');
+function readSiteContent() {
+    if (fs.existsSync(SITE_CONTENT_FILE)) {
+        try {
+            return JSON.parse(fs.readFileSync(SITE_CONTENT_FILE, 'utf-8'));
+        } catch (e) {
+            console.error("❌ Failed to parse site-content.json:", e);
+        }
+    }
+    // Return baked-in Hero fallbacks matching index.html
+    return {
+        hero: {
+            eyebrow: "DEEP PERSPECTIVE",
+            readtime: "9 Min Read",
+            headline: "The Illusion of Consensus: Bending the Corporate News Narrative",
+            body: "Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.",
+            byline: "Aniket Verma",
+            byline_role: "Senior Bias Analyst",
+            cta: "Expose The Script"
+        }
+    };
+}
+
+app.get('/api/site-content', publicApiLimiter, (req, res) => {
+    res.json(readSiteContent());
+});
+
+// POST: Save/update site content (Admin only)
+app.post('/api/admin/site-content', adminAuthLimiter, basicAuth, (req, res) => {
+    const { updates } = req.body;
+    if (!Array.isArray(updates)) {
+        return res.status(400).json({ error: "Updates must be an array." });
+    }
+    const current = readSiteContent();
+    for (const item of updates) {
+        if (item && typeof item.key === 'string' && item.value !== undefined) {
+            current[item.key] = item.value;
+        }
+    }
+    fs.writeFileSync(SITE_CONTENT_FILE, JSON.stringify(current, null, 2), 'utf-8');
+    console.log(`📡 Site content updated keys: ${updates.map(u => u.key).join(', ')}`);
+    res.json({ ok: true, updated: updates });
 });
 
 // ==========================================================================

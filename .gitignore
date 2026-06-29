@@ -1,5 +1,11 @@
-**/node_modules/
-**/dist/
-**/.DS_Store
-**/.env
-.agents/
+node_modules/
+.env
+.env.local
+.env.*.local
+gnews-cache.json
+poll-data.json
+subscribers.json
+site-content.json
+.DS_Store
+dist/
+.vercel

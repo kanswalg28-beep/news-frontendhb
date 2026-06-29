@@ -108,19 +108,19 @@
 
             <!-- Hero Typography Content -->
             <div class="hero-content-wrapper">
-                <div class="hero-text-block glass-element">
+                <div class="hero-text-block glass-element" data-site-content-block="hero">
                     <!-- Live indicators with premium Saffron tint -->
                     <div class="category-tag-wrapper">
-                        <span class="live-indicator"><span class="live-dot saffron-pulse"></span> DEEP PERSPECTIVE</span>
-                        <span class="read-time"><i data-lucide="clock"></i> 9 Min Read</span>
+                        <span class="live-indicator"><span class="live-dot saffron-pulse"></span> <span data-bind="eyebrow">DEEP PERSPECTIVE</span></span>
+                        <span class="read-time"><i data-lucide="clock"></i> <span data-bind="readtime">9 Min Read</span></span>
                     </div>
 
                     <h1 class="hero-title">
-                        The Illusion of Consensus: Bending the Corporate News Narrative
+                        <span data-bind="headline">The Illusion of Consensus: Bending the Corporate News Narrative</span>
                     </h1>
                     
                     <p class="hero-summary">
-                        Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.
+                        <span data-bind="body">Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.</span>
                     </p>
 
                     <!-- Author Details & Meta -->
@@ -128,12 +128,12 @@
                         <div class="author-info">
                             <div class="author-avatar"><i data-lucide="user"></i></div>
                             <div>
-                                <span class="author-name">Aniket Verma</span>
-                                <span class="author-title">Senior Bias Analyst</span>
+                                <span class="author-name" data-bind="byline">Aniket Verma</span>
+                                <span class="author-title" data-bind="byline_role">Senior Bias Analyst</span>
                             </div>
                         </div>
                         <a href="#/article/featured-story" class="btn btn-primary" aria-label="Read full analysis">
-                            <span>Expose The Script</span>
+                            <span data-bind="cta">Expose The Script</span>
                             <i data-lucide="arrow-up-right"></i>
                         </a>
                     </div>
@@ -143,12 +143,25 @@
 
         <!-- BENTO BOX SECTION -->
         <section class="bento-section" id="satire">
-            <div class="section-header">
+            <div class="section-header" data-site-content-block="ledger_intro">
                 <div class="title-with-accent">
                     <span class="tag-bar green-bar"></span>
-                    <h2 class="section-title">The Ledger</h2>
+                    <h2 class="section-title"><span data-bind="heading">The Ledger</span></h2>
                 </div>
-                <p class="section-subtitle">Dismantling corporate bias and manufactured consent, systematically</p>
+                <p class="section-subtitle"><span data-bind="sub">Dismantling corporate bias and manufactured consent, systematically</span></p>
+            </div>
+
+            <!-- Premium Date Filter Row -->
+            <div class="date-filters-container glass-element" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto;">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button class="date-filter-btn active" id="filter-today">Today</button>
+                    <button class="date-filter-btn" id="filter-yesterday">Yesterday</button>
+                    <button class="date-filter-btn" id="filter-all-dates">All Archives</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Custom Date:</span>
+                    <input type="date" id="filter-custom-date" style="color-scheme: dark;">
+                </div>
             </div>
 
             <!-- Bento Layout Wrapper for Sidebar + Grid -->
@@ -188,28 +201,7 @@
                 <!-- THE ASYMMETRICAL BENTO GRID -->
                 <div class="bento-grid" id="dynamic-bento-grid">
 
-                <!-- 1. BENTO CARD: MAJOR ARTICLE (Span 2x2 on desktop, visual & narrative powerhouse) -->
-                <!-- BACKEND DEV: Bind article database fields here (e.g. tags, titles, summaries, timestamps) -->
-                <article class="bento-card bento-span-2x2 glass-element" id="card-1">
-                    <div class="card-visual">
-                        <!-- High contrast dark gradient filter for text legibility -->
-                        <div class="card-image-bg" style="background-image: url('./assets/hero-bg.png'); filter: saturate(0.85) contrast(1.15);"></div>
-                        <div class="card-tag saffron-bg">Politics</div>
-                    </div>
-                    <div class="card-body">
-                        <span class="card-time"><i data-lucide="clock"></i> 4 Hours Ago</span>
-                        <h3 class="card-title">
-                            <a href="#" class="stretched-link">Consent Under the Microscope: Decoding Startup Panic Over the DPDP Mandates</a>
-                        </h3>
-                        <p class="card-summary">
-                            Tech startups and legacy aggregators are suddenly finding out that obtaining "explicit and clear user consent" is incredibly inconvenient when you actually have to tell users what you plan to do with their profiles.
-                        </p>
-                        <div class="card-footer-meta">
-                            <span class="card-author">By Devendra Joshi</span>
-                            <span class="card-action"><i data-lucide="arrow-up-right"></i></span>
-                        </div>
-                    </div>
-                </article>
+
 
                 <!-- 2. BENTO CARD: DYNAMIC DATA VISUALIZATION SUMMARY (Span 1x2 on desktop) -->
                 <!-- BACKEND DEV: Populate chart datasets dynamically or inject real-time values from API -->
@@ -247,14 +239,14 @@
                             </svg>
                         </div>
                         
-                        <div class="metrics-grid">
+                        <div class="metrics-grid" data-site-content-block="rhetoric">
                             <div class="metric-block">
-                                <span class="metric-val">84.2%</span>
-                                <span class="metric-lbl">Sensational Bias</span>
+                                <span class="metric-val" data-bind="value">84.2%</span>
+                                <span class="metric-lbl" data-bind="label">Sensational Bias</span>
                             </div>
                             <div class="metric-block">
-                                <span class="metric-val green-text">+12.4% YoY</span>
-                                <span class="metric-lbl">Hyperbole saturation</span>
+                                <span class="metric-val green-text" data-bind="yoy">+12.4% YoY</span>
+                                <span class="metric-lbl" data-bind="caption">Hyperbole saturation</span>
                             </div>
                         </div>
                         <p class="card-summary small-summary">
@@ -265,19 +257,19 @@
 
                 <!-- 3. BENTO CARD: MANIFESTO QUOTE (Span 1x1 on desktop) -->
                 <!-- BACKEND DEV: Bind editorial opinions, quotes, and expert details -->
-                <blockquote class="bento-card bento-span-1x1 glass-element quote-card" id="manifesto">
+                <blockquote class="bento-card bento-span-1x1 glass-element quote-card" id="manifesto" data-site-content-block="manifesto">
                     <div class="quote-header">
                         <i data-lucide="quote" class="quote-icon"></i>
-                        <span class="card-tag">Our Manifesto</span>
+                        <span class="card-tag" data-bind="heading">Our Manifesto</span>
                     </div>
                     <div class="quote-body">
                         <p class="quote-text">
-                            "Objective journalism is a corporate shield. The moment you select which stories to cover or which quotes to crop, bias exists. We just choose to be honest about ours."
+                            <span data-bind="body">"Objective journalism is a corporate shield. The moment you select which stories to cover or which quotes to crop, bias exists. We just choose to be honest about ours."</span>
                         </p>
                     </div>
                     <div class="quote-author-meta">
-                        <span class="quote-author-name">Dr. Rupa Murthy</span>
-                        <span class="quote-author-title">Editor-in-Chief, Honestly Biased</span>
+                        <span class="quote-author-name" data-bind="author">Dr. Rupa Murthy</span>
+                        <span class="quote-author-title" data-bind="role">Editor-in-Chief, Honestly Biased</span>
                     </div>
                 </blockquote>
 
@@ -306,19 +298,19 @@
 
                 <!-- 5. BENTO CARD: AUDIO/PODCAST TILE (Span 1x1 on desktop) -->
                 <!-- BACKEND DEV: Bind dynamic audio player URL, length, and title -->
-                <section class="bento-card bento-span-1x1 glass-element audio-card" id="card-5">
+                <section class="bento-card bento-span-1x1 glass-element audio-card" id="card-5" data-site-content-block="podcast">
                     <div class="audio-header">
-                        <span class="card-tag saffron-bg">Podcast</span>
-                        <span class="audio-duration">34:10 Min</span>
+                        <span class="card-tag saffron-bg" data-bind="label">Podcast</span>
+                        <span class="audio-duration" data-bind="runtime">34:10 Min</span>
                     </div>
                     <div class="audio-body">
-                        <h3 class="card-title">Honestly Biased Dialogues: Dissecting Editorial Gag Orders</h3>
-                        <p class="card-summary small-summary">
+                        <h3 class="card-title" data-bind="title">Honestly Biased Dialogues: Dissecting Editorial Gag Orders</h3>
+                        <p class="card-summary small-summary" data-bind="blurb">
                             We sit down with former editors to chart how corporate balance sheets silently dictate the limits of prime-time debates.
                         </p>
                     </div>
                     <div class="audio-player-ui">
-                        <button class="play-btn-circle" aria-label="Play podcast episode">
+                        <button class="play-btn-circle" aria-label="Play podcast episode" data-bind="play_label">
                             <i data-lucide="play" class="play-icon"></i>
                         </button>
                         <div class="audio-progress-bar">
@@ -329,15 +321,15 @@
 
                 <!-- 6. BENTO CARD: HIGH IMPACT STORY WITH VIDEO PREVIEW (Span 2x1 on desktop) -->
                 <!-- BACKEND DEV: Inject dynamic video asset, thumbnail, and category details -->
-                <article class="bento-card bento-span-2x1 glass-element video-preview-card" id="card-6">
+                <article class="bento-card bento-span-2x1 glass-element video-preview-card" id="card-6" data-site-content-block="featured" data-featured-id="varanasi">
                     <div class="card-visual">
                         <!-- HTML5 Video Component with Fallback Poster -->
                         <video class="card-video-element" id="card-6-video" preload="metadata" poster="./assets/hero-bg.png" playsinline loop muted>
                             <source src="https://assets.mixkit.co/videos/preview/mixkit-handloom-weaver-working-on-a-loom-41885-large.mp4" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
-                        <span class="card-tag green-bg">Tech</span>
-                        <span class="video-duration-badge"><i data-lucide="clock" style="width:10px; height:10px; display:inline-block; margin-right:2px; vertical-align:middle;"></i>14:20</span>
+                        <span class="card-tag green-bg" data-bind="category">Tech</span>
+                        <span class="video-duration-badge"><i data-lucide="clock" style="width:10px; height:10px; display:inline-block; margin-right:2px; vertical-align:middle;"></i><span data-bind="meta">14:20</span></span>
                         
                         <!-- Floating Video Play Overlay -->
                         <button class="video-play-overlay" aria-label="Play documentary video preview">
@@ -346,43 +338,43 @@
                         </button>
                     </div>
                     <div class="card-body">
-                        <span class="card-time"><i data-lucide="clock"></i> 1 Day Ago</span>
+                        <span class="card-time"><i data-lucide="clock"></i> <span data-bind="ago">1 Day Ago</span></span>
                         <h3 class="card-title">
-                            <a href="#">The Craftsmen of Varanasi: Weaving Through Algorithmic Disruption</a>
+                            <a href="#" data-bind="title">The Craftsmen of Varanasi: Weaving Through Algorithmic Disruption</a>
                         </h3>
                         <p class="card-summary">
                             Our special report tracking how traditional handloom weavers are resisting automated replica algorithms and mass-produced synthetic chains.
                         </p>
                         <div class="card-footer-meta">
-                            <span class="card-author">By Meenakshi Iyer</span>
-                            <span class="card-action"><i data-lucide="video"></i> 14:20 Documentary</span>
+                            <span class="card-author">By <span data-bind="author">Meenakshi Iyer</span></span>
+                            <span class="card-action"><i data-lucide="video"></i> <span data-bind="doc_meta">14:20 Documentary</span></span>
                         </div>
                     </div>
                 </article>
 
                 <!-- 7. BENTO CARD: INTERACTIVE CIVIC POLL (Span 1x1 on desktop) -->
                 <!-- BACKEND DEV: Bind active survey question, options, and track votes in state -->
-                <section class="bento-card bento-span-1x1 glass-element poll-card" id="card-7">
+                <section class="bento-card bento-span-1x1 glass-element poll-card" id="card-7" data-site-content-block="poll">
                     <div class="poll-header">
-                        <h3 class="poll-title"><i data-lucide="vote" class="poll-icon"></i> Narrative Pulse</h3>
+                        <h3 class="poll-title"><i data-lucide="vote" class="poll-icon"></i> <span data-bind="heading">Narrative Pulse</span></h3>
                         <span class="card-tag">Interactive</span>
                     </div>
                     <div class="poll-body">
-                        <p class="poll-question">Do you believe corporate media news outlets can ever deliver genuinely objective reporting?</p>
+                        <p class="poll-question" data-bind="prompt">Do you believe corporate media news outlets can ever deliver genuinely objective reporting?</p>
                         
                         <form class="poll-form" id="civic-poll-form">
-                            <button type="button" class="poll-option-btn">
-                                <span class="poll-option-text">No, ownership dictates bias</span>
+                            <button type="button" class="poll-option-btn" data-poll-id="no" data-bind="option_template">
+                                <span class="poll-option-text" data-bind="label">No, ownership dictates bias</span>
                                 <span class="poll-bar" style="width: 74%;"></span>
                                 <span class="poll-percentage">74%</span>
                             </button>
-                            <button type="button" class="poll-option-btn">
-                                <span class="poll-option-text">Yes, under regulatory separation</span>
+                            <button type="button" class="poll-option-btn" data-poll-id="yes" data-bind="option_template">
+                                <span class="poll-option-text" data-bind="label">Yes, under regulatory separation</span>
                                 <span class="poll-bar" style="width: 18%;"></span>
                                 <span class="poll-percentage">18%</span>
                             </button>
-                            <button type="button" class="poll-option-btn">
-                                <span class="poll-option-text">Impartiality is a systemic myth anyway</span>
+                            <button type="button" class="poll-option-btn" data-poll-id="myth" data-bind="option_template">
+                                <span class="poll-option-text" data-bind="label">Impartiality is a systemic myth anyway</span>
                                 <span class="poll-bar" style="width: 8%;"></span>
                                 <span class="poll-percentage">8%</span>
                             </button>
@@ -390,23 +382,7 @@
                     </div>
                 </section>
 
-                <!-- 8. BENTO CARD: TECHNOLOGY BRIEFING (Span 1x1 on desktop) -->
-                <!-- BACKEND DEV: Dynamic article template -->
-                <article class="bento-card bento-span-1x1 glass-element" id="card-8">
-                    <div class="card-body header-only-body">
-                        <span class="card-tag">Tech</span>
-                        <h3 class="card-title">
-                            <a href="#">The Agri-Tech Bubble: Edge Sensors Sold to Smallholders Lacking Water Security</a>
-                        </h3>
-                        <p class="card-summary small-summary">
-                            How tech venture capitalists are pushing machine-learning soil monitoring before basic irrigation infrastructures are deployed.
-                        </p>
-                        <div class="card-footer-meta">
-                            <span class="card-author">By Rohan Gupta</span>
-                            <span class="card-time">2 Days Ago</span>
-                        </div>
-                    </div>
-                </article>
+
 
             </div>
             </div> <!-- End of bento-layout-wrapper -->
@@ -481,8 +457,8 @@
                 <a href="#" class="footer-logo">
                     <img src="./assets/logo.png" alt="Honestly Biased Logo" class="logo-png-footer">
                 </a>
-                <p class="mission-statement">
-                    Honestly Biased is a reader-supported, digital-first commentary hub. We reject the corporate performance of neutral objectivity. We believe in providing transparent, analytical, and uncompromisingly honest perspectives on politics, satire, and media power structures in India.
+                <p class="mission-statement" data-site-content-block="footer">
+                    <span data-bind="mission">Honestly Biased is a reader-supported, digital-first commentary hub. We reject the corporate performance of neutral objectivity. We believe in providing transparent, analytical, and uncompromisingly honest perspectives on politics, satire, and media power structures in India.</span>
                 </p>
             </div>
 
@@ -500,9 +476,9 @@
             </div>
 
             <!-- Support & Governance -->
-            <div class="footer-links-column">
+            <div class="footer-links-column" data-site-content-block="standards">
                 <h4 class="footer-heading">Standards</h4>
-                <ul class="footer-links-list">
+                <ul class="footer-links-list" id="standards-list">
                     <li><a href="#manifesto">Our Manifesto</a></li>
                     <li><a href="#">Editorial Standards</a></li>
                     <li><a href="#">Independent Funding Audit</a></li>

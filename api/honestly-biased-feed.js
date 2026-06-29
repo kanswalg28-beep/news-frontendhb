@@ -112,7 +112,8 @@ async function rebuildCacheFromGNews() {
         imageurl: raw.image || './assets/hero-bg.png',
         author: 'Honestly Biased AI Engine',
         authortype: 'ai',
-        timeago: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST',
+        publishdate: raw.publishedAt ? new Date(raw.publishedAt).toISOString() : new Date().toISOString(),
+        timeago: new Date(raw.publishedAt || Date.now()).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }) + ' IST',
         createdat: new Date().toISOString(),
         updatedat: new Date().toISOString()
       };
@@ -147,6 +148,20 @@ module.exports = async (req, res) => {
     // FAST PATH: serve whatever is in the cache NOW. Never blocks on GNews.
     const cache = await getCache();
     const customArticles = await getCustomArticles();
+
+    const GNEWS_ENABLED = false; // Set to true to re-enable in future
+
+    if (!GNEWS_ENABLED) {
+      return res.json({
+        rhetoricMeter: {
+          hyperbolePercentage: "84.2%",
+          yoyGrowth: "+12.4%",
+          aiAnalysis: "Prime-time coverage monitored today reveals a severe spike in hyperbolic sensationalism as legacy newsrooms attempt to mask policy concessions behind corporate volume."
+        },
+        articles: customArticles,
+        highlights: DEFAULT_HIGHLIGHTS
+      });
+    }
 
     if (!cache || !cache.articles || cache.articles.length === 0) {
       // No cache yet. Return custom articles only so the page is never empty.

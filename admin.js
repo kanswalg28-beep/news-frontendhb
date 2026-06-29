@@ -206,6 +206,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (cmsFullBlog) cmsFullBlog.value = article.fullblog || '';
                     cmsImageUrl.value = article.imageurl || '';
                     cmsOriginalUrl.value = article.originalurl || '';
+                    if (cmsPublishDate) {
+                        if (article.publishdate) {
+                            // Convert ISO format to datetime-local string format (YYYY-MM-DDTHH:mm)
+                            const d = new Date(article.publishdate);
+                            const pad = num => String(num).padStart(2, '0');
+                            const localString = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                            cmsPublishDate.value = localString;
+                        } else {
+                            cmsPublishDate.value = '';
+                        }
+                    }
                     
                     // Trigger live preview reload
                     cmsPreviewImg.src = article.imageurl || "./assets/hero-bg.png";
@@ -259,6 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Date input element
+    const cmsPublishDate = document.getElementById('cms-publish-date');
+
     // Submit Editor Form: POST or PUT requests
     if (cmsArticleForm) {
         cmsArticleForm.addEventListener('submit', async (e) => {
@@ -274,7 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 aisummary: cmsSummary.value,
                 fullblog: cmsFullBlog ? cmsFullBlog.value : "",
                 imageurl: cmsImageUrl.value || "./assets/hero-bg.png",
-                originalurl: cmsOriginalUrl.value || "#"
+                originalurl: cmsOriginalUrl.value || "#",
+                publishdate: cmsPublishDate && cmsPublishDate.value ? new Date(cmsPublishDate.value).toISOString() : null
             };
 
             try {
@@ -330,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cmsArticleForm) cmsArticleForm.reset();
         if (cmsArticleId) cmsArticleId.value = '';
         if (cmsFullBlog) cmsFullBlog.value = '';
+        if (cmsPublishDate) cmsPublishDate.value = '';
         
         cmsFormTitle.textContent = "Draft Custom Editorial";
         cmsFormSubtitle.textContent = "Write an opinionated editorial that unshifts to the very front of the ledger.";
@@ -666,6 +682,84 @@ document.addEventListener('DOMContentLoaded', () => {
             window.open('/api/admin/subscribers/export', '_blank');
         });
     }
+
+    // ==========================================================================
+    // HERO ARTICLE CUSTOMIZER CONTROLLER
+    // ==========================================================================
+    const heroForm = document.getElementById('cms-hero-form');
+    const heroEyebrow = document.getElementById('hero-eyebrow');
+    const heroReadtime = document.getElementById('hero-readtime');
+    const heroHeadline = document.getElementById('hero-headline');
+    const heroBody = document.getElementById('hero-body');
+    const heroByline = document.getElementById('hero-byline');
+    const heroBylineRole = document.getElementById('hero-byline-role');
+    const heroCta = document.getElementById('hero-cta');
+
+    async function loadHeroContent() {
+        if (!heroForm) return;
+        try {
+            const res = await fetch('/api/site-content?_t=' + Date.now());
+            if (res.ok) {
+                const content = await res.json();
+                const hero = content.hero || {};
+                if (heroEyebrow) heroEyebrow.value = hero.eyebrow || '';
+                if (heroReadtime) heroReadtime.value = hero.readtime || '';
+                if (heroHeadline) heroHeadline.value = hero.headline || '';
+                if (heroBody) heroBody.value = hero.body || '';
+                if (heroByline) heroByline.value = hero.byline || '';
+                if (heroBylineRole) heroBylineRole.value = hero.byline_role || '';
+                if (heroCta) heroCta.value = hero.cta || '';
+            }
+        } catch (e) {
+            console.error("Failed to load hero content:", e);
+        }
+    }
+
+    if (heroForm) {
+        heroForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btn-hero-submit');
+            if (btnSubmit) btnSubmit.disabled = true;
+
+            const payload = {
+                updates: [
+                    {
+                        key: 'hero',
+                        value: {
+                            eyebrow: heroEyebrow.value,
+                            readtime: heroReadtime.value,
+                            headline: heroHeadline.value,
+                            body: heroBody.value,
+                            byline: heroByline.value,
+                            byline_role: heroBylineRole.value,
+                            cta: heroCta.value
+                        }
+                    }
+                ]
+            };
+
+            try {
+                const response = await fetch('/api/admin/site-content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    alert("Hero article successfully updated!");
+                    await loadHeroContent();
+                } else {
+                    alert("Failed to save hero content updates.");
+                }
+            } catch (err) {
+                console.error("Failed to save hero changes:", err);
+                alert("Cannot connect to server.");
+            } finally {
+                if (btnSubmit) btnSubmit.disabled = false;
+            }
+        });
+    }
+
+    loadHeroContent();
 
     // Load subscribers initial load and poll every 10 seconds
     loadSubscribers();

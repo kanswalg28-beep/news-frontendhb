@@ -34,9 +34,19 @@ module.exports = async (req, res) => {
 
   try {
     if (method === 'PUT') {
+      const updatePayload = { ...body };
+      if (updatePayload.publishdate) {
+        updatePayload.publishdate = new Date(updatePayload.publishdate).toISOString();
+        updatePayload.timeago = new Date(updatePayload.publishdate).toLocaleTimeString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }) + ' IST';
+      }
       const { data, error } = await supabase
         .from('articles')
-        .update(body)
+        .update(updatePayload)
         .eq('id', articleId)
         .select()
         .single();

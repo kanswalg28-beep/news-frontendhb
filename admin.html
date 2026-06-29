@@ -637,6 +637,11 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="cms-publish-date" class="cms-label">Publish Date & Time (Optional Back-date)</label>
+                            <input type="datetime-local" id="cms-publish-date" class="cms-input glass-element" style="color-scheme: dark;">
+                        </div>
+
+                        <div class="form-group">
                             <label for="cms-region" class="cms-label">Region Panel</label>
                             <select id="cms-region" class="cms-select glass-element" required>
                                 <option value="indian">Indian Edition</option>
@@ -696,6 +701,49 @@
                         <div class="cms-form-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:16px; border-top:1px solid var(--border-color);">
                             <button type="button" class="btn btn-secondary" id="btn-cms-reset" style="display: none; padding: 12px 20px; font-size: 0.78rem; font-weight:700;">Cancel Edit</button>
                             <button type="submit" class="btn btn-primary" id="btn-cms-submit" style="padding: 12px 24px; font-size: 0.78rem; font-weight:700;">Publish Editorial</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Hero Article Customizer Panel -->
+                <section class="cms-panel-card glass-element" id="hero-customizer-section">
+                    <div class="form-header-row" style="border-bottom: 1.5px solid var(--border-color); padding-bottom: 20px; margin-bottom: 24px;">
+                        <h2 style="font-size: 1.35rem; font-weight:800; font-family:var(--font-heading); margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="crown" style="color: var(--accent-gold); width: 20px; height: 20px;"></i> Editable Hero Article
+                        </h2>
+                        <p style="color:var(--text-muted); font-size:0.78rem; font-weight:600; margin:0;">Edit the main featured hero article displayed at the top of the homepage.</p>
+                    </div>
+                    <form id="cms-hero-form" style="display:flex; flex-direction:column; gap:16px;">
+                        <div class="form-group">
+                            <label for="hero-eyebrow" class="cms-label">Hero Eyebrow (e.g. DEEP PERSPECTIVE)</label>
+                            <input type="text" id="hero-eyebrow" class="cms-input glass-element" placeholder="DEEP PERSPECTIVE" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-readtime" class="cms-label">Read Time (e.g. 9 Min Read)</label>
+                            <input type="text" id="hero-readtime" class="cms-input glass-element" placeholder="9 Min Read" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-headline" class="cms-label">Hero Headline</label>
+                            <input type="text" id="hero-headline" class="cms-input glass-element" placeholder="Enter hero article title..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-body" class="cms-label">Hero Summary Description</label>
+                            <textarea id="hero-body" class="cms-textarea glass-element" rows="3" placeholder="Enter summary description..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-byline" class="cms-label">Byline / Author Name</label>
+                            <input type="text" id="hero-byline" class="cms-input glass-element" placeholder="Aniket Verma" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-byline-role" class="cms-label">Author Role / Title</label>
+                            <input type="text" id="hero-byline-role" class="cms-input glass-element" placeholder="Senior Bias Analyst" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-cta" class="cms-label">CTA Button Label</label>
+                            <input type="text" id="hero-cta" class="cms-input glass-element" placeholder="Expose The Script" required>
+                        </div>
+                        <div class="cms-form-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:16px; border-top:1px solid var(--border-color);">
+                            <button type="submit" class="btn btn-primary" id="btn-hero-submit" style="padding: 12px 24px; font-size: 0.78rem; font-weight:700;">Save Hero Content</button>
                         </div>
                     </form>
                 </section>
