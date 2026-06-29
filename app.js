@@ -3,115 +3,6 @@
    Handles: Theme Toggling, Mobile Nav, Scroll Reveals, Civic Poll, Form Submit
    ========================================================================== */
 
-// ============================================================================
-// SITE CONTENT HYDRATION - replace [data-bind=...] text nodes with values
-// fetched from /api/site-content on DOMContentLoaded. Each block exists in
-// index.html with [data-site-content-block="..."] and inner [data-bind="..."]
-// spans. Missing blocks render their original HTML as fallback.
-// ============================================================================
-async function hydrateSiteContent() {
-    let payload = {};
-    try {
-        const res = await fetch('/api/site-content?_t=' + Date.now());
-        if (res.ok) payload = await res.json() || {};
-    } catch (e) {
-        // network down — fall through, blocks keep baked defaults
-    }
-
-    // Walk all blocks. Each block scope makes bind keys scoped.
-    for (const blockNode of document.querySelectorAll('[data-site-content-block]')) {
-        const blockKey = blockNode.dataset.siteContentBlock;
-        const data = payload[blockKey];
-        if (!data) continue; // no DB row -> keep HTML fallback
-
-        // === Featured-cards: lookup matched doc by data-featured-id ===
-        // The CMS payload key is "featured" (one row, array of docs each with an
-        // id). Each card in the page declares data-featured-id="dpdp|varanasi|..."
-        // and we look the doc up by that id, so the bind spans reflect that doc.
-        if (blockKey === 'featured' || blockKey === 'featured_card') {
-            const fid = blockNode.dataset.featuredId;
-            const docs = Array.isArray(data.docs) ? data.docs : [];
-            const doc = docs.find(d => d && d.id === fid);
-            if (!doc) continue;
-            blockNode.querySelectorAll('[data-bind]').forEach(node => {
-                const k = node.dataset.bind;
-                if (doc[k] != null) node.textContent = String(doc[k]);
-            });
-            continue;
-        }
-
-        // === Poll: rebuild the option rows from data.options array ===
-        if (blockKey === 'poll') {
-            const form = blockNode.querySelector('.poll-form');
-            if (form && Array.isArray(data.options)) {
-                // hydrate header / prompt text
-                blockNode.querySelectorAll('[data-bind]').forEach(node => {
-                    if (node.dataset.bind === 'option_template') return;
-                    const k = node.dataset.bind;
-                    if (data[k] != null) node.textContent = String(data[k]);
-                });
-                // rebuild the three option buttons
-                form.innerHTML = '';
-                data.options.slice(0, 6).forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'poll-option-btn';
-                    btn.setAttribute('data-poll-id', opt.id || '');
-                    btn.innerHTML =
-                        '<span class="poll-option-text">' + escapeHtml(opt.label || '') + '</span>' +
-                        '<span class="poll-bar" style="width: ' + Number(opt.pct || 0) + '%;"></span>' +
-                        '<span class="poll-percentage">' + Number(opt.pct || 0) + '%</span>';
-                    form.appendChild(btn);
-                });
-            }
-            continue;
-        }
-
-        // === Standards list: rebuild the <ul> from data.items ===
-        if (blockKey === 'standards' && Array.isArray(data.items)) {
-            const ul = blockNode.querySelector('ul');
-            if (ul) {
-                ul.innerHTML = '';
-                data.items.slice(0, 12).forEach(item => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = '#';
-                    a.textContent = String(item || '');
-                    li.appendChild(a);
-                    ul.appendChild(li);
-                });
-            }
-            continue;
-        }
-
-        // === Generic scalar block: replace each leaf's textContent ===
-        blockNode.querySelectorAll('[data-bind]').forEach(node => {
-            const k = node.dataset.bind;
-            if (data[k] != null) node.textContent = String(data[k]);
-        });
-    }
-}
-
-function escapeHtml(s) {
-    if (s === null || s === undefined) return '';
-    // Build entities from char codes so the file source itself never
-    // contains literal "<", ">", "&", """, "'" — those would be
-    // unescaped by editors / patch tools in transit.
-    var E = {
-        amp:   String.fromCharCode(38),                                 // &
-        lt:    String.fromCharCode(38, 108, 116, 59),                   // <
-        gt:    String.fromCharCode(38, 103, 116, 59),                   // >
-        quot:  String.fromCharCode(38, 113, 117, 111, 116, 59),        // "
-        apos:  String.fromCharCode(38, 35, 49, 48, 55, 59)             // '
-    };
-    return String(s)
-        .replace(/&/g, E.amp)
-        .replace(/</g, E.lt)
-        .replace(/>/g, E.gt)
-        .replace(/"/g, E.quot)
-        .replace(/'/g, E.apos);
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     
     // ==========================================================================
@@ -446,18 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
     civicPollHTML = card7 ? card7.outerHTML : "";
 
     async function loadDynamicArticles() {
-        console.log("📡 Fetching site_content blocks first, then live feed...");
-
-        // ------------------------------------------------------------
-        // 1. Hydrate static editorial blocks from CMS-controlled DB rows.
-        //    Must run BEFORE the bento observer attaches so that
-        //    IntersectionObserver entries aren't missed on a fast re-render.
-        // ------------------------------------------------------------
-        try { await hydrateSiteContent(); }
-        catch (e) { console.warn('site_content hydration failed:', e); }
-
         console.log("📡 Attempting to fetch live AI-calibrated Honestly Biased feed...");
-
+        
         try {
             // Call the local backend server (running on port 3000)
             const response = await fetch('/api/honestly-biased-feed');
