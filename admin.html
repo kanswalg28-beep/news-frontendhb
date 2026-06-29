@@ -323,6 +323,89 @@
             pointer-events: none;
         }
 
+        /* File Upload Styles */
+        .file-upload-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-upload-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .file-upload-input-wrapper {
+            position: relative;
+        }
+
+        .file-upload-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .file-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1.5px solid rgba(0, 229, 255, 0.3);
+            color: var(--accent-cyan);
+            border-radius: var(--border-radius-sm);
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .file-upload-btn:hover {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+        }
+
+        .file-upload-btn i {
+            width: 16px;
+            height: 16px;
+        }
+
+        .file-upload-btn.uploading {
+            background: rgba(197, 155, 39, 0.1);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            cursor: wait;
+        }
+
+        .file-upload-status {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-glass);
+            min-height: 20px;
+        }
+
+        .file-upload-status.success {
+            color: #00e676;
+            border-color: rgba(0, 230, 118, 0.4);
+            background: rgba(0, 230, 118, 0.05);
+        }
+
+        .file-upload-status.error {
+            color: var(--accent-crimson);
+            border-color: rgba(178, 41, 46, 0.4);
+            background: rgba(178, 41, 46, 0.05);
+        }
+
         /* INVENTORY LIST PANEL (Right Column) */
         .inventory-list-header {
             display: flex;
@@ -519,6 +602,11 @@
             box-shadow: 0 0 12px rgba(178, 41, 46, 0.25);
         }
 
+        /* Hero form image upload */
+        .hero-image-upload {
+            margin-top: 8px;
+        }
+
         /* Responsive Layout Grid adjustment */
         @media (max-width: 1200px) {
             .cms-grid {
@@ -556,6 +644,13 @@
             }
             body {
                 padding: 20px 16px;
+            }
+            .file-upload-row {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .file-upload-btn {
+                justify-content: center;
             }
         }
     </style>
@@ -687,15 +782,26 @@
                             </div>
                         </div>
                         
-                        <div class="form-row" style="display:grid; grid-template-columns:1fr; gap:16px;">
-                            <div class="form-group">
-                                <label for="cms-image-url" class="cms-label">Image URL / Link</label>
-                                <input type="text" id="cms-image-url" class="cms-input glass-element" placeholder="./assets/hero-bg.png">
+                        <div class="form-group">
+                            <label for="cms-image-url" class="cms-label">Cover Image</label>
+                            <div class="file-upload-group">
+                                <div class="file-upload-row">
+                                    <div class="file-upload-input-wrapper">
+                                        <input type="text" id="cms-image-url" class="cms-input glass-element" placeholder="./assets/hero-bg.png or paste image URL..." readonly style="background: rgba(255,255,255,0.01);">
+                                        <input type="file" id="cms-image-upload" class="file-upload-input" accept="image/*" aria-label="Upload cover image">
+                                    </div>
+                                    <button type="button" class="file-upload-btn" id="cms-image-upload-btn" aria-label="Upload image file">
+                                        <i data-lucide="upload"></i>
+                                        <span>Upload</span>
+                                    </button>
+                                </div>
+                                <div class="file-upload-status" id="cms-image-upload-status"></div>
                             </div>
-                            <div class="form-group">
-                                <label for="cms-original-url" class="cms-label">Source Link / Spin URL</label>
-                                <input type="text" id="cms-original-url" class="cms-input glass-element" placeholder="https://gnews.io...">
-                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cms-original-url" class="cms-label">Source Link / Spin URL</label>
+                            <input type="text" id="cms-original-url" class="cms-input glass-element" placeholder="https://gnews.io...">
                         </div>
                         
                         <div class="cms-form-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:16px; border-top:1px solid var(--border-color);">
@@ -742,6 +848,32 @@
                             <label for="hero-cta" class="cms-label">CTA Button Label</label>
                             <input type="text" id="hero-cta" class="cms-input glass-element" placeholder="Expose The Script" required>
                         </div>
+
+                        <!-- Hero Image Upload -->
+                        <div class="form-group hero-image-upload">
+                            <label class="cms-label">Hero Background Image</label>
+                            <div class="image-preview-wrapper" style="height: 160px;">
+                                <img id="hero-preview-img" src="./assets/hero-bg.png" alt="Hero Preview Visual">
+                                <div class="image-preview-placeholder" id="hero-preview-placeholder" style="display: none;">
+                                    <i data-lucide="image" style="width: 24px; height: 24px;"></i>
+                                    <span>Preview visual loaded dynamically</span>
+                                </div>
+                            </div>
+                            <div class="file-upload-group" style="margin-top: 12px;">
+                                <div class="file-upload-row">
+                                    <div class="file-upload-input-wrapper">
+                                        <input type="text" id="hero-image-url" class="cms-input glass-element" placeholder="./assets/hero-bg.png or paste image URL..." readonly style="background: rgba(255,255,255,0.01);">
+                                        <input type="file" id="hero-image-upload" class="file-upload-input" accept="image/*" aria-label="Upload hero background image">
+                                    </div>
+                                    <button type="button" class="file-upload-btn" id="hero-image-upload-btn" aria-label="Upload hero image file">
+                                        <i data-lucide="upload"></i>
+                                        <span>Upload</span>
+                                    </button>
+                                </div>
+                                <div class="file-upload-status" id="hero-image-upload-status"></div>
+                            </div>
+                        </div>
+
                         <div class="cms-form-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:8px; padding-top:16px; border-top:1px solid var(--border-color);">
                             <button type="submit" class="btn btn-primary" id="btn-hero-submit" style="padding: 12px 24px; font-size: 0.78rem; font-weight:700;">Save Hero Content</button>
                         </div>
@@ -879,7 +1011,7 @@
     </div>
 
     <!-- Core CMS Operations Javascript -->
-    <script src="admin.js"></script>
+    <script src="admin-with-upload.js"></script>
     <script>
         lucide.createIcons();
     </script>
