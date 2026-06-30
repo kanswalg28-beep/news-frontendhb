@@ -629,6 +629,10 @@ app.put('/api/admin/articles/:id', adminAuthLimiter, basicAuth, (req, res) => {
         target.originalurl = originalUrl || target.originalurl || target.originalUrl;
         target.instagramShortcode = instagramShortcode !== undefined ? instagramShortcode : target.instagramShortcode;
         target.authortype = authorType || target.authortype || target.authorType;
+        // Handle archived field
+        if (req.body.archived !== undefined) {
+            target.archived = req.body.archived === true;
+        }
         if (publishdate !== undefined) {
             target.publishdate = publishdate ? new Date(publishdate).toISOString() : null;
             if (target.publishdate) {
