@@ -444,6 +444,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const gridContainer = document.getElementById('dynamic-bento-grid');
 
+// Capture static HTML for persistent widgets
+// These will be replaced by CMS data when available
+const rhetoricMeterEl = document.getElementById('card-2');
+const manifestoEl = document.getElementById('manifesto');
+const expressBiasEl = document.getElementById('express-bias');
+const podcastEl = document.getElementById('podcast');
+const featuredEl = document.getElementById('featured');
+const civicPollEl = document.getElementById('civic-poll');
+
+if (rhetoricMeterEl) rhetoricMeterHTML = rhetoricMeterEl.outerHTML;
+if (manifestoEl) manifestoHTML = manifestoEl.outerHTML;
+if (expressBiasEl) expressBiasHTML = expressBiasEl.outerHTML;
+if (podcastEl) podcastHTML = podcastEl.outerHTML;
+if (featuredEl) VaranasiDocHTML = featuredEl.outerHTML;
+if (civicPollEl) civicPollHTML = civicPollEl.outerHTML;
+
+
     // CMS-backed widget HTML builders (replace static captured HTML)
     // These will be built dynamically from /api/site-content data
     let rhetoricMeterData = null;
