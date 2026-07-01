@@ -500,13 +500,30 @@ if (civicPollEl) civicPollHTML = civicPollEl.outerHTML;
 
                             // Store dynamic articles globally and clean headlines from "Refracted: " prefix
                             // Also normalize property names from camelCase (API) to lowercase (frontend)
-        allArticles = (data.articles || []).map(art => {
-          // Only process if the field exists (API may already clean this)
-          if (art.aiheadline) {
-            art.aiheadline = art.aiheadline.replace(/^Repreated:\\s*/i, '');
-          }
-          return art; // Return the article object unchanged (fields already correct)
-        });
+                            allArticles = (data.articles || []).map(art => {
+                                if (art.aiHeadline) {
+                                    art.aiHeadline = art.aiHeadline.replace(/^Refracted:\s*/i, '');
+                                }
+                                // Normalize camelCase to lowercase for frontend compatibility
+                                return {
+                                    ...art,
+                                    aiheadline: art.aiHeadline,
+                                    aisummary: art.aiSummary,
+                                    biasaudit: art.biasAudit,
+                                    fullblog: art.fullBlog,
+                                    originalsource: art.originalSource,
+                                    originaltitle: art.originalTitle,
+                                    timeago: art.timeAgo,
+                                    authortype: art.authorType,
+                                    author: art.author,
+                                    imageurl: art.imageUrl,
+                                    originalurl: art.originalUrl,
+                                    publishdate: art.publishdate,
+                                    region: art.region,
+                                    category: art.category,
+                                    id: art.id
+                                };
+                            });
 
                 // Dynamically update the ticker highlights banner
                 let highlightsToRender = data.highlights || [];
@@ -1525,4 +1542,324 @@ if (civicPollEl) civicPollHTML = civicPollEl.outerHTML;
     // WIDGET HTML BUILDERS (CMS-backed with static fallbacks)
     // ==========================================================================
 
-function buildRhetoricMeterHTML() {        if (!rhetoricMeterData) {            // Static fallback from original HTML            return `<section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">                <div class="card-header-tag">                    <span class="card-tag green-bg">Narrative Index</span>                    <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>                </div>                <div class="card-body data-viz-body">                    <h3 class="card-title">Rhetoric Meter</h3>                    <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>                    <div class="data-graph-container">                        <svg class="data-svg" viewBox="0 0 200 100">                            <defs>                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">                                    <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>                                    <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>                                </linearGradient>                            </defs>                            <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                            <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                            <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                            <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />                            <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />                            <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />                            <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />                        </svg>                    </div>                    <div class="metrics-grid">                        <div class="metric-block">                            <span class="metric-val">${rhetoricMeterData?.hyperbolePercentage || '84.2%'}</span>                            <span class="metric-lbl">${rhetoricMeterData?.label || 'Sensational Bias'}</span>                        </div>                        <div class="metric-block">                            <span class="metric-val green-text">${rhetoricMeterData?.yoyGrowth || '+12.4% YoY'}</span>                            <span class="metric-lbl">${rhetoricMeterData?.caption || 'Hyperbole saturation'}</span>                        </div>                    </div>                    <p class="card-summary small-summary">                        ${rhetoricMeterData?.aiAnalysis || 'Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.'}                    </p>                </div>            </section>`;        }        const d = rhetoricMeterData;        return `<section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">            <div class="card-header-tag">                <span class="card-tag green-bg">Narrative Index</span>                <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>            </div>            <div class="card-body data-viz-body">                <h3 class="card-title">Rhetoric Meter</h3>                <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>                <div class="data-graph-container">                    <svg class="data-svg" viewBox="0 0 200 100">                        <defs>                            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">                                <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>                                <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>                            </linearGradient>                        </defs>                        <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                        <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                        <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                        <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />                        <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />                        <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />                        <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />                    </svg>                </div>                <div class="metrics-grid">                    <div class="metric-block">                        <span class="metric-val">${d.hyperbolePercentage || '84.2%'}</span>                        <span class="metric-lbl">${d.label || 'Sensational Bias'}</span>                    </div>                    <div class="metric-block">                        <span class="metric-val green-text">${d.yoyGrowth || '+12.4% YoY'}</span>                        <span class="metric-lbl">${d.caption || 'Hyperbole saturation'}</span>                    </div>                </div>                <p class="card-summary small-summary">                    ${d.aiAnalysis || 'Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.'}                </p>            </div>        </section>`;    }
+    function buildRhetoricMeterHTML() {
+        if (!rhetoricMeterData) {
+            // Static fallback from original HTML
+            return `<section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">
+                <div class="card-header-tag">
+                    <span class="card-tag green-bg">Narrative Index</span>
+                    <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>
+                </div>
+                <div class="card-body data-viz-body">
+                    <h3 class="card-title">Rhetoric Meter</h3>
+                    <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>
+                    <div class="data-graph-container">
+                        <svg class="data-svg" viewBox="0 0 200 100">
+                            <defs>
+                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>
+                                    <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>
+                                </linearGradient>
+                            </defs>
+                            <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                            <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                            <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                            <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />
+                            <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />
+                            <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />
+                            <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />
+                        </svg>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-block">
+                            <span class="metric-val">84.2%</span>
+                            <span class="metric-lbl">Sensational Bias</span>
+                        </div>
+                        <div class="metric-block">
+                            <span class="metric-val green-text">+12.4% YoY</span>
+                            <span class="metric-lbl">Hyperbole saturation</span>
+                        </div>
+                    </div>
+                    <p class="card-summary small-summary">
+                        Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.
+                    </p>
+                </div>
+            </section>`;
+        }
+        const d = rhetoricMeterData;
+        return `<section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">
+            <div class="card-header-tag">
+                <span class="card-tag green-bg">Narrative Index</span>
+                <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>
+            </div>
+            <div class="card-body data-viz-body">
+                <h3 class="card-title">Rhetoric Meter</h3>
+                <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>
+                <div class="data-graph-container">
+                    <svg class="data-svg" viewBox="0 0 200 100">
+                        <defs>
+                            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>
+                                <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>
+                            </linearGradient>
+                        </defs>
+                        <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                        <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                        <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />
+                        <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />
+                        <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />
+                        <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />
+                        <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />
+                    </svg>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-block">
+                        <span class="metric-val">${escapeHtml(d.value || '84.2%')}</span>
+                        <span class="metric-lbl">${escapeHtml(d.label || 'Sensational Bias')}</span>
+                    </div>
+                    <div class="metric-block">
+                        <span class="metric-val green-text">${escapeHtml(d.yoy || '+12.4% YoY')}</span>
+                        <span class="metric-lbl">${escapeHtml(d.caption || 'Hyperbole saturation')}</span>
+                    </div>
+                </div>
+                <p class="card-summary small-summary">
+                    ${escapeHtml(d.aiAnalysis || 'Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.')}
+                </p>
+            </div>
+        </section>`;
+    }
+
+    function buildManifestoHTML() {
+        if (!manifestoData) {
+            return `<blockquote class="bento-card bento-span-1x1 glass-element quote-card" id="manifesto">
+                <div class="quote-header">
+                    <i data-lucide="quote" class="quote-icon"></i>
+                    <span class="card-tag">Our Manifesto</span>
+                </div>
+                <div class="quote-body">
+                    <p class="quote-text">
+                        "Objective journalism is a corporate shield. The moment you select which stories to cover or which quotes to crop, bias exists. We just choose to be honest about ours."
+                    </p>
+                </div>
+                <div class="quote-author-meta">
+                    <span class="quote-author-name">Dr. Rupa Murthy</span>
+                    <span class="quote-author-title">Editor-in-Chief, Honestly Biased</span>
+                </div>
+            </blockquote>`;
+        }
+        return `<blockquote class="bento-card bento-span-1x1 glass-element quote-card" id="manifesto">
+            <div class="quote-header">
+                <i data-lucide="quote" class="quote-icon"></i>
+                <span class="card-tag">${escapeHtml(manifestoData.heading || 'Our Manifesto')}</span>
+            </div>
+            <div class="quote-body">
+                <p class="quote-text">
+                    ${escapeHtml(manifestoData.body || '"Objective journalism is a corporate shield. The moment you select which stories to cover or which quotes to crop, bias exists. We just choose to be honest about ours."')}
+                </p>
+            </div>
+            <div class="quote-author-meta">
+                <span class="quote-author-name">${escapeHtml(manifestoData.author || 'Dr. Rupa Murthy')}</span>
+                <span class="quote-author-title">${escapeHtml(manifestoData.role || 'Editor-in-Chief, Honestly Biased')}</span>
+            </div>
+        </blockquote>`;
+    }
+
+    function buildExpressBiasHTML() {
+        if (!expressBiasData) {
+            return `<aside class="bento-card bento-span-1x1 glass-element feed-card" id="card-4">
+                <div class="feed-header">
+                    <h3 class="feed-title"><i data-lucide="zap" class="feed-icon"></i> Express Bias</h3>
+                    <span class="feed-badge">LIVE</span>
+                </div>
+                <div class="feed-container">
+                    <div class="feed-item">
+                        <span class="feed-time">17:42</span>
+                        <p class="feed-content">FinMin launches rigorous desk-to-desk search for lost file containing standard economic logic.</p>
+                    </div>
+                    <div class="feed-item">
+                        <span class="feed-time">16:15</span>
+                        <p class="feed-content">Space agency confirms successful deployment of sensor engineered to detect political hot air.</p>
+                    </div>
+                    <div class="feed-item">
+                        <span class="feed-time">15:08</span>
+                        <p class="feed-content">Telecom operators reach historic agreement to collectively drop calls more efficiently.</p>
+                    </div>
+                </div>
+            </aside>`;
+        }
+        // express_bias data should have items array or feed items
+        const items = Array.isArray(expressBiasData.items) ? expressBiasData.items : [];
+        const feedItems = items.length > 0 
+            ? items.map(item => `<div class="feed-item"><span class="feed-time">${escapeHtml(item.time || '12:00')}</span><p class="feed-content">${escapeHtml(item.content || item)}</p></div>`).join('')
+            : `<div class="feed-item"><span class="feed-time">12:00</span><p class="feed-content">${escapeHtml(expressBiasData.blurb || 'No live feed items available.')}</p></div>`;
+        return `<aside class="bento-card bento-span-1x1 glass-element feed-card" id="card-4">
+            <div class="feed-header">
+                <h3 class="feed-title"><i data-lucide="zap" class="feed-icon"></i> ${escapeHtml(expressBiasData.label || 'Express Bias')}</h3>
+                <span class="feed-badge">LIVE</span>
+            </div>
+            <div class="feed-container">
+                ${feedItems}
+            </div>
+        </aside>`;
+    }
+
+    function buildPodcastHTML() {
+        if (!podcastData) {
+            return `<section class="bento-card bento-span-1x1 glass-element audio-card" id="card-5">
+                <div class="audio-header">
+                    <span class="card-tag saffron-bg">Podcast</span>
+                    <span class="audio-duration">34:10 Min</span>
+                </div>
+                <div class="audio-body">
+                    <h3 class="card-title">Honestly Biased Dialogues: Dissecting Editorial Gag Orders</h3>
+                    <p class="card-summary small-summary">
+                        We sit down with former editors to chart how corporate balance sheets silently dictate the limits of prime-time debates.
+                    </p>
+                </div>
+                <div class="audio-player-ui">
+                    <button class="play-btn-circle" aria-label="Play podcast episode">
+                        <i data-lucide="play" class="play-icon"></i>
+                    </button>
+                    <div class="audio-progress-bar">
+                        <div class="audio-progress" style="width: 25%"></div>
+                    </div>
+                </div>
+            </section>`;
+        }
+        return `<section class="bento-card bento-span-1x1 glass-element audio-card" id="card-5">
+            <div class="audio-header">
+                <span class="card-tag saffron-bg">${escapeHtml(podcastData.label || 'Podcast')}</span>
+                <span class="audio-duration">${escapeHtml(podcastData.runtime || '34:10 Min')}</span>
+            </div>
+            <div class="audio-body">
+                <h3 class="card-title">${escapeHtml(podcastData.title || 'Honestly Biased Dialogues')}</h3>
+                <p class="card-summary small-summary">
+                    ${escapeHtml(podcastData.blurb || 'We sit down with former editors to chart how corporate balance sheets silently dictate the limits of prime-time debates.')}
+                </p>
+            </div>
+            <div class="audio-player-ui">
+                <button class="play-btn-circle" aria-label="Play podcast episode">
+                    <i data-lucide="play" class="play-icon"></i>
+                </button>
+                <div class="audio-progress-bar">
+                    <div class="audio-progress" style="width: 25%"></div>
+                </div>
+            </div>
+        </section>`;
+    }
+
+    function buildFeaturedHTML() {
+        // Use featuredData from CMS, or check if we have a varanasi article in allArticles
+        let article = featuredData;
+        if (!article && allArticles.length > 0) {
+            // Find an article with id matching 'varanasi' or use first article
+            article = allArticles.find(a => a.id && a.id.includes('varanasi')) || allArticles[3] || allArticles[0];
+        }
+        if (!article) {
+            return `<article class="bento-card bento-span-2x1 glass-element video-preview-card" id="card-6">
+                <div class="card-visual">
+                    <video class="card-video-element" id="card-6-video" preload="metadata" poster="./assets/hero-bg.png" playsinline loop muted>
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-handloom-weaver-working-on-a-loom-41885-large.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <span class="card-tag green-bg">Tech</span>
+                    <span class="video-duration-badge"><i data-lucide="clock" style="width:10px; height:10px; display:inline-block; margin-right:2px; vertical-align:middle;"></i><span>14:20</span></span>
+                    <button class="video-play-overlay" aria-label="Play documentary video preview">
+                        <span class="ripple-outer"></span>
+                        <span class="ripple-inner"><i data-lucide="play" class="video-icon"></i></span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <span class="card-time"><i data-lucide="clock"></i> <span>1 Day Ago</span></span>
+                    <h3 class="card-title">
+                        <a href="#">The Craftsmen of Varanasi: Weaving Through Algorithmic Disruption</a>
+                    </h3>
+                    <p class="card-summary">
+                        Our special report tracking how traditional handloom weavers are resisting automated replica algorithms and mass-produced synthetic chains.
+                    </p>
+                    <div class="card-footer-meta">
+                        <span class="card-author">By <span>Meenakshi Iyer</span></span>
+                        <span class="card-action"><i data-lucide="video"></i> <span>14:20 Documentary</span></span>
+                    </div>
+                </div>
+            </article>`;
+        }
+        return `<article class="bento-card bento-span-2x1 glass-element video-preview-card ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="card-6">
+            <div class="card-visual">
+                <video class="card-video-element" id="card-6-video" preload="metadata" poster="${escapeHtml(article.imageurl || './assets/hero-bg.png')}" playsinline loop muted>
+                    <source src="${escapeHtml(article.imageurl || 'https://assets.mixkit.co/videos/preview/mixkit-handloom-weaver-working-on-a-loom-41885-large.mp4')}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <span class="card-tag green-bg">${escapeHtml(article.category || 'Tech')}</span>
+                <span class="video-duration-badge"><i data-lucide="clock" style="width:10px; height:10px; display:inline-block; margin-right:2px; vertical-align:middle;"></i><span>${escapeHtml(article.meta || '14:20')}</span></span>
+                <button class="video-play-overlay" aria-label="Play documentary video preview">
+                    <span class="ripple-outer"></span>
+                    <span class="ripple-inner"><i data-lucide="play" class="video-icon"></i></span>
+                </button>
+            </div>
+            <div class="card-body">
+                <span class="card-time"><i data-lucide="clock"></i> <span>${escapeHtml(article.ago || article.timeago || '1 Day Ago')}</span></span>
+                <h3 class="card-title">
+                    <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${escapeHtml(article.title || article.aiHeadline || 'Featured Story')}</a>
+                </h3>
+                <p class="card-summary">
+                    ${escapeHtml(article.body || article.aiSummary || 'Special report tracking how traditional artisans are resisting algorithmic disruption.')}
+                </p>
+                <div class="card-footer-meta">
+                    <span class="card-author">By <span>${escapeHtml(article.author || article.byline || 'Meenakshi Iyer')}</span></span>
+                    <span class="card-action"><i data-lucide="video"></i> <span>${escapeHtml(article.doc_meta || '14:20 Documentary')}</span></span>
+                </div>
+            </div>
+        </article>`;
+    }
+
+    function buildPollHTML() {
+        if (!pollData || !Array.isArray(pollData.options)) {
+            return `<section class="bento-card bento-span-1x1 glass-element poll-card" id="card-7">
+                <div class="poll-header">
+                    <h3 class="poll-title"><i data-lucide="vote" class="poll-icon"></i> <span>Narrative Pulse</span></h3>
+                    <span class="card-tag">Interactive</span>
+                </div>
+                <div class="poll-body">
+                    <p class="poll-question">Do you believe corporate media news outlets can ever deliver genuinely objective reporting?</p>
+                    <form class="poll-form" id="civic-poll-form">
+                        <button type="button" class="poll-option-btn" data-poll-id="no">
+                            <span class="poll-option-text">No, ownership dictates bias</span>
+                            <span class="poll-bar" style="width: 74%;"></span>
+                            <span class="poll-percentage">74%</span>
+                        </button>
+                        <button type="button" class="poll-option-btn" data-poll-id="yes">
+                            <span class="poll-option-text">Yes, under regulatory separation</span>
+                            <span class="poll-bar" style="width: 18%;"></span>
+                            <span class="poll-percentage">18%</span>
+                        </button>
+                        <button type="button" class="poll-option-btn" data-poll-id="myth">
+                            <span class="poll-option-text">Impartiality is a systemic myth anyway</span>
+                            <span class="poll-bar" style="width: 8%;"></span>
+                            <span class="poll-percentage">8%</span>
+                        </button>
+                    </form>
+                </div>
+            </section>`;
+        }
+        const options = pollData.options.slice(0, 6).map((opt, idx) => 
+            `<button type="button" class="poll-option-btn" data-poll-id="${escapeHtml(opt.id || `opt-${idx}`)}">
+                <span class="poll-option-text">${escapeHtml(opt.label || '')}</span>
+                <span class="poll-bar" style="width: ${Number(opt.pct || 0)}%;"></span>
+                <span class="poll-percentage">${Number(opt.pct || 0)}%</span>
+            </button>`
+        ).join('');
+        return `<section class="bento-card bento-span-1x1 glass-element poll-card" id="card-7">
+            <div class="poll-header">
+                <h3 class="poll-title"><i data-lucide="vote" class="poll-icon"></i> <span>${escapeHtml(pollData.heading || 'Narrative Pulse')}</span></h3>
+                <span class="card-tag">Interactive</span>
+            </div>
+            <div class="poll-body">
+                <p class="poll-question">${escapeHtml(pollData.prompt || 'Do you believe corporate media news outlets can ever deliver genuinely objective reporting?')}</p>
+                <form class="poll-form" id="civic-poll-form">
+                    ${options}
+                </form>
+            </div>
+        </section>`;
+    }
+});
