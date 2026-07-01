@@ -37,8 +37,6 @@ async function hydrateSiteContent() {
                 const k = node.dataset.bind;
                 if (doc[k] != null) node.textContent = String(doc[k]);
             });
-            // Store for bento grid use
-            if (blockKey === 'featured') featuredData = doc;
             continue;
         }
 
@@ -66,8 +64,6 @@ async function hydrateSiteContent() {
                     form.appendChild(btn);
                 });
             }
-            // Store for bento grid use
-            pollData = data;
             continue;
         }
 
@@ -85,7 +81,6 @@ async function hydrateSiteContent() {
                     ul.appendChild(li);
                 });
             }
-            standardsData = data;
             continue;
         }
 
@@ -94,15 +89,6 @@ async function hydrateSiteContent() {
             const k = node.dataset.bind;
             if (data[k] != null) node.textContent = String(data[k]);
         });
-
-        // Store specific blocks for dynamic bento grid widgets
-        if (blockKey === 'rhetoric') rhetoricMeterData = data;
-        else if (blockKey === 'manifesto') manifestoData = data;
-        else if (blockKey === 'podcast') podcastData = data;
-        else if (blockKey === 'express_bias') expressBiasData = data;
-        else if (blockKey === 'hero') heroData = data;
-        else if (blockKey === 'ledger_intro') ledgerIntroData = data;
-        else if (blockKey === 'footer') footerData = data;
     }
 }
 
@@ -444,119 +430,116 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const gridContainer = document.getElementById('dynamic-bento-grid');
 
-// Capture static HTML for persistent widgets
-// These will be replaced by CMS data when available
-const rhetoricMeterEl = document.getElementById('card-2');
-const manifestoEl = document.getElementById('manifesto');
-const expressBiasEl = document.getElementById('express-bias');
-const podcastEl = document.getElementById('podcast');
-const featuredEl = document.getElementById('featured');
-const civicPollEl = document.getElementById('civic-poll');
+    // Capture the static layout fixtures on initial load to preserve premium styles
+    const card2 = document.getElementById('card-2');
+    const card3 = document.getElementById('manifesto');
+    const card4 = document.getElementById('card-4');
+    const card5 = document.getElementById('card-5');
+    const card6 = document.getElementById('card-6');
+    const card7 = document.getElementById('card-7');
 
-if (rhetoricMeterEl) rhetoricMeterHTML = rhetoricMeterEl.outerHTML;
-if (manifestoEl) manifestoHTML = manifestoEl.outerHTML;
-if (expressBiasEl) expressBiasHTML = expressBiasEl.outerHTML;
-if (podcastEl) podcastHTML = podcastEl.outerHTML;
-if (featuredEl) VaranasiDocHTML = featuredEl.outerHTML;
-if (civicPollEl) civicPollHTML = civicPollEl.outerHTML;
-
-
-    // CMS-backed widget HTML builders (replace static captured HTML)
-    // These will be built dynamically from /api/site-content data
-    let rhetoricMeterData = null;
-    let manifestoData = null;
-    let podcastData = null;
-    let expressBiasData = null;
-    let featuredData = null; // Varanasi / featured card
-    let pollData = null;
-    let standardsData = null;
-    let heroData = null;
-    let ledgerIntroData = null;
-    let footerData = null;
+    rhetoricMeterHTML = card2 ? card2.outerHTML : "";
+    manifestoHTML = card3 ? card3.outerHTML : "";
+    expressBiasHTML = card4 ? card4.outerHTML : "";
+    podcastHTML = card5 ? card5.outerHTML : "";
+    VaranasiDocHTML = card6 ? card6.outerHTML : "";
+    civicPollHTML = card7 ? card7.outerHTML : "";
 
     async function loadDynamicArticles() {
-            console.log("📡 Fetching site_content blocks first, then live feed...");
+        console.log("📡 Fetching site_content blocks first, then live feed...");
 
-            // ------------------------------------------------------------
-            // 1. Hydrate static editorial blocks from CMS-controlled DB rows.
-            //    Must run BEFORE the bento observer attaches so that
-            //    IntersectionObserver entries aren't missed on a fast re-render.
-            // ------------------------------------------------------------
-            try { await hydrateSiteContent(); }
-            catch (e) { console.warn('site_content hydration failed:', e); }
+        // ------------------------------------------------------------
+        // 1. Hydrate static editorial blocks from CMS-controlled DB rows.
+        //    Must run BEFORE the bento observer attaches so that
+        //    IntersectionObserver entries aren't missed on a fast re-render.
+        // ------------------------------------------------------------
+        try { await hydrateSiteContent(); }
+        catch (e) { console.warn('site_content hydration failed:', e); }
 
-            console.log("📡 Attempting to fetch live AI-calibrated Honestly Biased feed...");
+        console.log("📡 Attempting to fetch live AI-calibrated Honestly Biased feed...");
 
-            try {
-                // Call the local backend server (running on port 3000)
-                const response = await fetch('/api/honestly-biased-feed');
+        try {
+            // Call the local backend server (running on port 3000)
+            const response = await fetch('/api/honestly-biased-feed');
+            
+            if (!response.ok) {
+                throw new Error(`API returned HTTP status ${response.status}`);
+            }
 
-                if (!response.ok) {
-                    throw new Error(`API returned HTTP status ${response.status}`);
+            const data = await response.json();
+            console.log("🟢 Live feed loaded successfully. Calibrating bento boxes...");
+
+            // Store dynamic articles globally and clean headlines from "Refracted: " prefix
+            allArticles = (data.articles || []).map(art => {
+                if (art.aiheadline) {
+                    art.aiheadline = art.aiheadline.replace(/^Refracted:\s*/i, '');
                 }
+                return art;
+            });
 
-                const data = await response.json();
-                            console.log("🟢 Live feed loaded successfully. Calibrating bento boxes...");
-
-                            // Store dynamic articles globally and clean headlines from "Refracted: " prefix
-                            // Also normalize property names from camelCase (API) to lowercase (frontend)
-        allArticles = (data.articles || []).map(art => {
-          // Only process if the field exists (API may already clean this)
-          if (art.aiheadline) {
-            art.aiheadline = art.aiheadline.replace(/^Repreated:\\s*/i, '');
-          }
-          return art; // Return the article object unchanged (fields already correct)
-        });
-
-                // Dynamically update the ticker highlights banner
-                let highlightsToRender = data.highlights || [];
-                if (highlightsToRender.length === 0 && allArticles.length > 0) {
-                    // Automatically fall back to top 4 article headlines if highlights list is empty
-                    highlightsToRender = allArticles.slice(0, 4).map(a => a.aiHeadline);
-                }
-                if (highlightsToRender.length > 0) {
-                    const tickerTrack = document.querySelector('.ticker-track');
-                    if (tickerTrack) {
-                        let html = highlightsToRender.map(text => `<span>• ${text}</span>`).join('');
-                        // Repeat the first item to ensure a seamless infinite CSS scrolling loop
-                        html += `<span>• ${highlightsToRender[0]}</span>`;
-                        tickerTrack.innerHTML = html;
-                    }
-                }
-
-                // Update Rhetoric/Sentiment Tracker
-                if (data.rhetoricMeter) {
-                    rhetoricMeterData = data.rhetoricMeter;
-                }
-
-                // B. Initial dynamic grid render based on the current hash route
-                handleRouting(true);
-
-            } catch (error) {
-                console.log("\n=============================================================");
-                console.log("ℹ️  INFO: Live backend API is not currently active.");
-                console.log("👉 The website is running beautifully in offline static mode.");
-                console.log("👉 Run 'node mock-server.js' in the background to activate AI rewrites!");
-                console.log("=============================================================\n");
-
-                // Populate fallback highlights ticker
+            // Dynamically update the ticker highlights banner
+            let highlightsToRender = data.highlights || [];
+            if (highlightsToRender.length === 0 && allArticles.length > 0) {
+                // Automatically fall back to top 4 article headlines if highlights list is empty
+                highlightsToRender = allArticles.slice(0, 4).map(a => a.aiheadline);
+            }
+            if (highlightsToRender.length > 0) {
                 const tickerTrack = document.querySelector('.ticker-track');
                 if (tickerTrack) {
-                    const fallbackAlerts = [
-                        "[MEDIA AUDIT]: Manufactured consent monitored in prime-time transcript analyses.",
-                        "[FINANCIAL WATCH]: Shadow banking narrative expansion detected in central bank briefing notes.",
-                        "[TECH MONOPOLY]: Algorithmic platform surveillance frameworks under active critique.",
-                        "[HEALTH AUDIT]: Pharmaceutical lobbying budgets monitored in recent healthcare bills."
-                    ];
-                    let html = fallbackAlerts.map(text => `<span>• ${text}</span>`).join('');
-                    html += `<span>• ${fallbackAlerts[0]}</span>`;
+                    let html = highlightsToRender.map(text => `<span>• ${text}</span>`).join('');
+                    // Repeat the first item to ensure a seamless infinite CSS scrolling loop
+                    html += `<span>• ${highlightsToRender[0]}</span>`;
                     tickerTrack.innerHTML = html;
                 }
-
-                allArticles = [];
-                handleRouting(true);
             }
+
+            // A. Update the Rhetoric/Sentiment Tracker in our captured HTML cache
+            if (data.rhetoricMeter && rhetoricMeterHTML) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = rhetoricMeterHTML;
+                const rhetoricCard = tempDiv.firstElementChild;
+                if (rhetoricCard) {
+                    const metricVals = rhetoricCard.querySelectorAll('.metric-val');
+                    if (metricVals.length >= 2) {
+                        metricVals[0].textContent = data.rhetoricMeter.hyperbolePercentage;
+                        metricVals[1].textContent = data.rhetoricMeter.yoyGrowth;
+                    }
+                    const summary = rhetoricCard.querySelector('.card-summary');
+                    if (summary) {
+                        summary.textContent = data.rhetoricMeter.aiAnalysis;
+                    }
+                    rhetoricMeterHTML = rhetoricCard.outerHTML;
+                }
+            }
+
+            // B. Initial dynamic grid render based on the current hash route
+            handleRouting(true);
+
+        } catch (error) {
+            console.log("\n=============================================================");
+            console.log("ℹ️  INFO: Live backend API is not currently active.");
+            console.log("👉 The website is running beautifully in offline static mode.");
+            console.log("👉 Run 'node mock-server.js' in the background to activate AI rewrites!");
+            console.log("=============================================================\n");
+
+            // Populate fallback highlights ticker
+            const tickerTrack = document.querySelector('.ticker-track');
+            if (tickerTrack) {
+                const fallbackAlerts = [
+                    "[MEDIA AUDIT]: Manufactured consent monitored in prime-time transcript analyses.",
+                    "[FINANCIAL WATCH]: Shadow banking narrative expansion detected in central bank briefing notes.",
+                    "[TECH MONOPOLY]: Algorithmic platform surveillance frameworks under active critique.",
+                    "[HEALTH AUDIT]: Pharmaceutical lobbying budgets monitored in recent healthcare bills."
+                ];
+                let html = fallbackAlerts.map(text => `<span>• ${text}</span>`).join('');
+                html += `<span>• ${fallbackAlerts[0]}</span>`;
+                tickerTrack.innerHTML = html;
+            }
+
+            allArticles = [];
+            handleRouting(true);
         }
+    }
 
     // Select modal DOM elements
     const auditModal = document.getElementById('audit-modal');
@@ -830,33 +813,25 @@ if (civicPollEl) civicPollHTML = civicPollEl.outerHTML;
                     </article>
                 `);
             }
-                    });
+        });
 
-                    // Build widget HTML from CMS data (with static fallbacks)
-                    const rhetoricMeterHTML = buildRhetoricMeterHTML();
-                    const manifestoHTML = buildManifestoHTML();
-                    const expressBiasHTML = buildExpressBiasHTML();
-                    const podcastHTML = buildPodcastHTML();
-                    const featuredHTML = buildFeaturedHTML();
-                    const civicPollHTML = buildPollHTML();
-
-                    // Interlace our layout fixtures dynamically based on the category filter
-                    // If showing 'all', we interlace at perfect visual intervals.
-                    if (categoryFilter === 'all') {
-                        if (gridItems.length > 1) gridItems.splice(1, 0, rhetoricMeterHTML);
-                        if (gridItems.length > 2) gridItems.splice(2, 0, manifestoHTML);
-                        if (gridItems.length > 4) gridItems.splice(4, 0, expressBiasHTML);
-                        if (gridItems.length > 5) gridItems.splice(5, 0, podcastHTML);
-                        if (gridItems.length > 7) gridItems.splice(7, 0, featuredHTML);
-                        if (gridItems.length > 9) gridItems.splice(9, 0, civicPollHTML);
+        // Interlace our layout fixtures dynamically based on the category filter
+        // If showing 'all', we interlace at perfect visual intervals.
+        if (categoryFilter === 'all') {
+            if (gridItems.length > 1) gridItems.splice(1, 0, rhetoricMeterHTML);
+            if (gridItems.length > 2) gridItems.splice(2, 0, manifestoHTML);
+            if (gridItems.length > 4) gridItems.splice(4, 0, expressBiasHTML);
+            if (gridItems.length > 5) gridItems.splice(5, 0, podcastHTML);
+            if (gridItems.length > 7) gridItems.splice(7, 0, VaranasiDocHTML);
+            if (gridItems.length > 9) gridItems.splice(9, 0, civicPollHTML);
             
-                        // Append any leftovers
-                        if (gridItems.length <= 1) gridItems.push(rhetoricMeterHTML, manifestoHTML, expressBiasHTML, podcastHTML, featuredHTML, civicPollHTML);
-                    } else {
-                        // "each tab should have its own space" - do not append global widgets to category-specific views!
-                    }
+            // Append any leftovers
+            if (gridItems.length <= 1) gridItems.push(rhetoricMeterHTML, manifestoHTML, expressBiasHTML, podcastHTML, VaranasiDocHTML, civicPollHTML);
+        } else {
+            // "each tab should have its own space" - do not append global widgets to category-specific views!
+        }
 
-                    // Hydrate grid container
+        // Hydrate grid container
         gridContainer.innerHTML = gridItems.join('');
 
         // Apply staggered scroll reveal animations
@@ -1519,10 +1494,4 @@ if (civicPollEl) civicPollHTML = civicPollEl.outerHTML;
     loadDynamicArticles();
 
     console.log('Honestly Biased Core Platform Logic initialized successfully. Grid observers, forms and interactive voting channels fully functional.');
-
-
-    // ==========================================================================
-    // WIDGET HTML BUILDERS (CMS-backed with static fallbacks)
-    // ==========================================================================
-
-function buildRhetoricMeterHTML() {        if (!rhetoricMeterData) {            // Static fallback from original HTML            return `<section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">                <div class="card-header-tag">                    <span class="card-tag green-bg">Narrative Index</span>                    <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>                </div>                <div class="card-body data-viz-body">                    <h3 class="card-title">Rhetoric Meter</h3>                    <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>                    <div class="data-graph-container">                        <svg class="data-svg" viewBox="0 0 200 100">                            <defs>                                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">                                    <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>                                    <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>                                </linearGradient>                            </defs>                            <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                            <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                            <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                            <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />                            <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />                            <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />                            <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />                        </svg>                    </div>                    <div class="metrics-grid">                        <div class="metric-block">                            <span class="metric-val">${rhetoricMeterData?.hyperbolePercentage || '84.2%'}</span>                            <span class="metric-lbl">${rhetoricMeterData?.label || 'Sensational Bias'}</span>                        </div>                        <div class="metric-block">                            <span class="metric-val green-text">${rhetoricMeterData?.yoyGrowth || '+12.4% YoY'}</span>                            <span class="metric-lbl">${rhetoricMeterData?.caption || 'Hyperbole saturation'}</span>                        </div>                    </div>                    <p class="card-summary small-summary">                        ${rhetoricMeterData?.aiAnalysis || 'Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.'}                    </p>                </div>            </section>`;        }        const d = rhetoricMeterData;        return `<section class="bento-card bento-span-1x2 glass-element theme-green" id="card-2">            <div class="card-header-tag">                <span class="card-tag green-bg">Narrative Index</span>                <span class="ticker-pulse-container"><span class="live-dot green-pulse"></span> DYNAMIC</span>            </div>            <div class="card-body data-viz-body">                <h3 class="card-title">Rhetoric Meter</h3>                <p class="card-subtitle-small">Prime-time corporate television transcript parsing</p>                <div class="data-graph-container">                    <svg class="data-svg" viewBox="0 0 200 100">                        <defs>                            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">                                <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>                                <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>                            </linearGradient>                        </defs>                        <line x1="10" y1="10" x2="190" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                        <line x1="10" y1="50" x2="190" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                        <line x1="10" y1="90" x2="190" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="2,2" />                        <path class="graph-area" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15 L 190,90 Z" fill="url(#chartGrad)" />                        <path class="graph-path" d="M 10,90 Q 40,75 70,60 T 130,30 T 190,15" fill="none" stroke="var(--accent-green)" stroke-width="3" />                        <circle cx="190" cy="15" r="5" fill="var(--accent-green)" />                        <circle class="pulse-ring" cx="190" cy="15" r="9" fill="none" stroke="var(--accent-green)" stroke-width="1.5" />                    </svg>                </div>                <div class="metrics-grid">                    <div class="metric-block">                        <span class="metric-val">${d.hyperbolePercentage || '84.2%'}</span>                        <span class="metric-lbl">${d.label || 'Sensational Bias'}</span>                    </div>                    <div class="metric-block">                        <span class="metric-val green-text">${d.yoyGrowth || '+12.4% YoY'}</span>                        <span class="metric-lbl">${d.caption || 'Hyperbole saturation'}</span>                    </div>                </div>                <p class="card-summary small-summary">                    ${d.aiAnalysis || 'Prime-time panel debates monitored today recorded an all-time high of sensationalist adjectives vs objective factual references.'}                </p>            </div>        </section>`;    }
+});

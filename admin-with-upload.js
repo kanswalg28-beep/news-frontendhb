@@ -58,29 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const subCountBadge = document.getElementById('sub-count-badge');
     const btnExportSubscribers = document.getElementById('btn-export-subscribers');
 
-    // ARCHIVE FILTER DOM ELEMENTS
-    const archiveDateFrom = document.getElementById('archive-date-from');
-    const archiveDateTo = document.getElementById('archive-date-to');
-    const archiveStatusFilter = document.getElementById('archive-status-filter');
-    const archiveFilterApply = document.getElementById('archive-filter-apply');
-    const archiveFilterClear = document.getElementById('archive-filter-clear');
-    const bulkActionsBar = document.getElementById('bulk-actions-bar');
-    const bulkSelectedCount = document.getElementById('bulk-selected-count');
-    const bulkArchiveBtn = document.getElementById('bulk-archive');
-    const bulkRestoreBtn = document.getElementById('bulk-restore');
-    const bulkDeleteBtn = document.getElementById('bulk-delete');
-    const bulkCancelBtn = document.getElementById('bulk-cancel');
-
-    // Archive filter state
-    let archiveFilterState = {
-        dateFrom: null,
-        dateTo: null,
-        status: 'all' // 'all', 'active', 'archived'
-    };
-
-    // Bulk selection state
-    let bulkSelectedIds = new Set();
-
     // ==========================================================================
     // IMAGE UPLOAD UTILITIES
     // ==========================================================================
@@ -286,36 +263,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Filter based on search input query
         const query = searchFilterQuery.toLowerCase().trim();
-        let filtered = allArticles.filter(article => {
+        const filtered = allArticles.filter(article => {
             const matchHeadline = article.aiheadline && article.aiheadline.toLowerCase().includes(query);
             const matchSource = article.originalsource && article.originalsource.toLowerCase().includes(query);
             const matchCategory = article.category && article.category.toLowerCase().includes(query);
             const matchAuthor = article.author && article.author.toLowerCase().includes(query);
             return matchHeadline || matchSource || matchCategory || matchAuthor;
         });
-
-        // Apply archive filters
-        if (archiveFilters.dateFrom) {
-            const fromDate = new Date(archiveFilters.dateFrom);
-            filtered = filtered.filter(article => {
-                if (!article.publishdate) return false;
-                return new Date(article.publishdate) >= fromDate;
-            });
-        }
-        if (archiveFilters.dateTo) {
-            const toDate = new Date(archiveFilters.dateTo);
-            toDate.setHours(23, 59, 59, 999); // End of day
-            filtered = filtered.filter(article => {
-                if (!article.publishdate) return false;
-                return new Date(article.publishdate) <= toDate;
-            });
-        }
-        if (archiveFilters.status === 'active') {
-            filtered = filtered.filter(article => article.archived !== true);
-        } else if (archiveFilters.status === 'archived') {
-            filtered = filtered.filter(article => article.archived === true);
-        }
-        // 'all' shows everything
 
         if (filtered.length === 0) {
             adminArticlesList.innerHTML = `
@@ -332,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
         filtered.forEach(article => {
             const card = document.createElement('div');
             card.className = 'admin-card-row';
-            card.dataset.id = article.id;
 
             let badgeClass = 'badge-ai';
             let badgeText = '🤖 AI Audited';
@@ -344,31 +297,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 badgeText = '🎥 IG Video';
             }
 
-            // Archive status badge
-            const isArchived = article.archived === true;
-            const archiveBadge = isArchived 
-                ? '<span class="author-type-badge" style="background: rgba(178, 41, 46, 0.15); border-color: rgba(178, 41, 46, 0.4); color: var(--accent-crimson);"><i data-lucide="archive" style="width:10px;height:10px;"></i> Archived</span>'
-                : '<span class="author-type-badge" style="background: rgba(0, 230, 118, 0.1); border-color: rgba(0, 230, 118, 0.4); color: #00e676;"><i data-lucide="check-circle" style="width:10px;height:10px;"></i> Active</span>';
-
             const cardImageUrl = article.imageurl || "./assets/hero-bg.png";
 
             let regionBadge = '🇮🇳 Indian';
             if (article.region === 'world') regionBadge = '🌐 World';
             else if (article.region === 'uk') regionBadge = '🇬🇧 UK';
 
-            // Format publish date for display
-            const publishDate = article.publishdate ? new Date(article.publishdate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—';
-
             card.innerHTML = `
-                <!-- Checkbox for bulk actions -->
-                <div class="admin-row-checkbox" style="width: 50px; min-width: 50px; display: flex; align-items: center; justify-content: center; border-right: 1.5px solid var(--border-glass); background: rgba(255,255,255,0.005);">
-                    <input type="checkbox" class="bulk-select-checkbox" data-id="${article.id}" style="width: 18px; height: 18px; accent-color: var(--accent-cyan); cursor: pointer;">
-                </div>
-
                 <!-- Thumbnail Cover Preview -->
                 <div class="admin-row-thumb" style="background-image: url('${cardImageUrl}')">
                     <span class="admin-row-tag">${article.category}</span>
-                    ${archiveBadge}
                 </div>
                 
                 <!-- Card content meta -->
@@ -379,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="author-type-badge ${badgeClass}">${badgeText}</span>
                         <span class="author-type-badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-glass);">${regionBadge}</span>
                         <span><i data-lucide="globe"></i> ${article.originalsource || 'Honestly Biased'}</span>
-                        <span><i data-lucide="calendar"></i> ${publishDate}</span>
                         <span><i data-lucide="clock"></i> ${article.timeago}</span>
                     </div>
                 </div>
@@ -388,9 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="admin-row-actions">
                     <button class="btn-action act-edit" data-id="${article.id}" title="Refine Satirical Text">
                         <i data-lucide="edit-3"></i>
-                    </button>
-                    <button class="btn-action act-archive" data-id="${article.id}" title="${isArchived ? 'Restore from Archive' : 'Move to Archive'}" style="opacity: ${isArchived ? '0.7' : '1'};">
-                        <i data-lucide="${isArchived ? 'rotate-ccw' : 'archive'}"></i>
                     </button>
                     <button class="btn-action act-delete" data-id="${article.id}" title="Permanently Scrub News Card">
                         <i data-lucide="trash-2"></i>
@@ -428,12 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             cmsPublishDate.value = '';
                         }
-                    }
-
-                    // Populate archived checkbox
-                    const cmsArchived = document.getElementById('cms-archived');
-                    if (cmsArchived) {
-                        cmsArchived.checked = article.archived === true;
                     }
                     
                     // Trigger live preview reload
@@ -491,12 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-
-        // Bind Archive buttons
-        bindArchiveButtons();
-
-        // Bind Bulk checkboxes
-        bindBulkCheckboxes();
     }
 
     // Submit Editor Form: POST or PUT requests
@@ -515,8 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullblog: cmsFullBlog ? cmsFullBlog.value : "",
                 imageurl: cmsImageUrl.value || "./assets/hero-bg.png",
                 originalurl: cmsOriginalUrl.value || "#",
-                publishdate: cmsPublishDate && cmsPublishDate.value ? new Date(cmsPublishDate.value).toISOString() : null,
-                archived: document.getElementById('cms-archived') ? document.getElementById('cms-archived').checked : false
+                publishdate: cmsPublishDate && cmsPublishDate.value ? new Date(cmsPublishDate.value).toISOString() : null
             };
 
             try {
@@ -585,10 +506,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cmsFormSubtitle.textContent = "Write an opinionated editorial that unshifts to the very front of the ledger.";
         btnCmsSubmit.textContent = "Publish Editorial";
         btnCmsReset.style.display = "none";
-
-        // Reset archived checkbox
-        const cmsArchived = document.getElementById('cms-archived');
-        if (cmsArchived) cmsArchived.checked = false;
     }
 
     if (btnCmsReset) {
@@ -600,194 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', () => {
             searchFilterQuery = searchInput.value;
             populateManagerList();
-        });
-    }
-
-    // ==========================================================================
-    // ARCHIVE SYSTEM: Date range filter, status filter, bulk actions
-    // ==========================================================================
-    let archiveFilters = {
-        dateFrom: null,
-        dateTo: null,
-        status: 'active' // 'all', 'active', 'archived'
-    };
-
-    // Apply archive filters
-    if (archiveFilterApply) {
-        archiveFilterApply.addEventListener('click', () => {
-            archiveFilters.dateFrom = archiveDateFrom ? archiveDateFrom.value : null;
-            archiveFilters.dateTo = archiveDateTo ? archiveDateTo.value : null;
-            archiveFilters.status = archiveStatusFilter ? archiveStatusFilter.value : 'active';
-            populateManagerList();
-        });
-    }
-
-    // Clear archive filters
-    if (archiveFilterClear) {
-        archiveFilterClear.addEventListener('click', () => {
-            if (archiveDateFrom) archiveDateFrom.value = '';
-            if (archiveDateTo) archiveDateTo.value = '';
-            if (archiveStatusFilter) archiveStatusFilter.value = 'active';
-            archiveFilters = { dateFrom: null, dateTo: null, status: 'active' };
-            populateManagerList();
-        });
-    }
-
-    // Update bulk actions bar visibility and count
-    function updateBulkActionsBar() {
-        const checkboxes = adminArticlesList.querySelectorAll('.bulk-select-checkbox:checked');
-        const count = checkboxes.length;
-        
-        if (count > 0) {
-            bulkActionsBar.style.display = 'flex';
-            bulkSelectedCount.textContent = `${count} selected`;
-        } else {
-            bulkActionsBar.style.display = 'none';
-        }
-    }
-
-    // Bulk action: Archive selected
-    if (bulkArchiveBtn) {
-        bulkArchiveBtn.addEventListener('click', async () => {
-            const checkboxes = adminArticlesList.querySelectorAll('.bulk-select-checkbox:checked');
-            const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
-            
-            if (ids.length === 0) return;
-            
-            if (confirm(`Archive ${ids.length} selected article(s)?`)) {
-                try {
-                    for (const id of ids) {
-                        const response = await fetch(`/api/admin/articles/${id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ archived: true })
-                        });
-                        if (response.ok) {
-                            const idx = allArticles.findIndex(a => String(a.id) === String(id));
-                            if (idx !== -1) allArticles[idx].archived = true;
-                        }
-                    }
-                    updateBulkActionsBar();
-                    updateStatsMetrics();
-                    populateManagerList();
-                } catch (err) {
-                    console.error('Bulk archive failed:', err);
-                    alert('Failed to archive selected articles.');
-                }
-            }
-        });
-    }
-
-    // Bulk action: Restore selected
-    if (bulkRestoreBtn) {
-        bulkRestoreBtn.addEventListener('click', async () => {
-            const checkboxes = adminArticlesList.querySelectorAll('.bulk-select-checkbox:checked');
-            const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
-            
-            if (ids.length === 0) return;
-            
-            if (confirm(`Restore ${ids.length} selected article(s) from archive?`)) {
-                try {
-                    for (const id of ids) {
-                        const response = await fetch(`/api/admin/articles/${id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ archived: false })
-                        });
-                        if (response.ok) {
-                            const idx = allArticles.findIndex(a => String(a.id) === String(id));
-                            if (idx !== -1) allArticles[idx].archived = false;
-                        }
-                    }
-                    updateBulkActionsBar();
-                    updateStatsMetrics();
-                    populateManagerList();
-                } catch (err) {
-                    console.error('Bulk restore failed:', err);
-                    alert('Failed to restore selected articles.');
-                }
-            }
-        });
-    }
-
-    // Bulk action: Delete selected
-    if (bulkDeleteBtn) {
-        bulkDeleteBtn.addEventListener('click', async () => {
-            const checkboxes = adminArticlesList.querySelectorAll('.bulk-select-checkbox:checked');
-            const ids = Array.from(checkboxes).map(cb => cb.dataset.id);
-            
-            if (ids.length === 0) return;
-            
-            if (confirm(`PERMANENTLY DELETE ${ids.length} selected article(s)? This cannot be undone.`)) {
-                try {
-                    for (const id of ids) {
-                        const response = await fetch(`/api/admin/articles/${id}`, { method: 'DELETE' });
-                        if (response.ok) {
-                            allArticles = allArticles.filter(a => String(a.id) !== String(id));
-                        }
-                    }
-                    updateBulkActionsBar();
-                    updateStatsMetrics();
-                    populateManagerList();
-                } catch (err) {
-                    console.error('Bulk delete failed:', err);
-                    alert('Failed to delete selected articles.');
-                }
-            }
-        });
-    }
-
-    // Bulk cancel
-    if (bulkCancelBtn) {
-        bulkCancelBtn.addEventListener('click', () => {
-            // Uncheck all checkboxes
-            adminArticlesList.querySelectorAll('.bulk-select-checkbox').forEach(cb => {
-                cb.checked = false;
-            });
-            updateBulkActionsBar();
-        });
-    }
-
-    // Handle checkbox changes for bulk actions
-    function bindBulkCheckboxes() {
-        adminArticlesList.querySelectorAll('.bulk-select-checkbox').forEach(cb => {
-            cb.addEventListener('change', updateBulkActionsBar);
-        });
-    }
-
-    // Archive/Restore individual article
-    function bindArchiveButtons() {
-        adminArticlesList.querySelectorAll('.act-archive').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                const article = allArticles.find(a => String(a.id) === String(id));
-                if (!article) return;
-                
-                const isArchived = article.archived === true;
-                const action = isArchived ? 'restore' : 'archive';
-                
-                if (confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} "${article.aiheadline}"?`)) {
-                    try {
-                        const response = await fetch(`/api/admin/articles/${id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ archived: !isArchived })
-                        });
-                        
-                        if (response.ok) {
-                            const idx = allArticles.findIndex(a => String(a.id) === String(id));
-                            if (idx !== -1) allArticles[idx].archived = !isArchived;
-                            updateStatsMetrics();
-                            populateManagerList();
-                        } else {
-                            alert(`Failed to ${action} article.`);
-                        }
-                    } catch (err) {
-                        console.error(`${action} failed:`, err);
-                        alert(`Cannot connect to server.`);
-                    }
-                }
-            });
         });
     }
 
