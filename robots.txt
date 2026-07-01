@@ -1,0 +1,18 @@
+# Honestly Biased - robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.honestlybiased.com/sitemap.xml
+
+# Crawl-delay (be respectful)
+Crawl-delay: 10
+
+# Disallow admin and API routes
+Disallow: /admin
+Disallow: /api/
+Disallow: /db/
+Disallow: /node_modules/
+Disallow: /*.json$
+Disallow: /*.js$
+Disallow: /*.css$

@@ -118,6 +118,61 @@ body {
     top: 20px;
 }
 
+/* ==========================================================================
+   FOCUS-VISIBLE STYLES — WCAG 2.1 AA compliant visible focus
+   ========================================================================== */
+:focus-visible {
+    outline: 3px solid var(--accent-saffron);
+    outline-offset: 2px;
+}
+
+/* Override for specific elements that need different focus treatment */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+[role="link"]:focus-visible {
+    outline: 3px solid var(--accent-saffron);
+    outline-offset: 2px;
+}
+
+/* Special case: theme toggle and icon buttons */
+.icon-btn:focus-visible,
+.theme-toggle:focus-visible,
+.poll-option-btn:focus-visible,
+.date-filter-btn:focus-visible,
+.category-tab-btn:focus-visible,
+.region-tab-btn:focus-visible,
+.video-play-overlay:focus-visible,
+.play-btn-circle:focus-visible,
+.newsletter-btn:focus-visible {
+    outline: 3px solid var(--accent-saffron);
+    outline-offset: 3px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Remove default :focus styles that might conflict */
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* ==========================================================================
+   SCREEN READER ONLY — Accessibility utility
+   ========================================================================== */
+.sr-only, .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
 /* Core headings and elements */
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-editorial);

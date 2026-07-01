@@ -10,18 +10,125 @@
     <!-- Open Graph Metadata for Social Sharing -->
     <meta property="og:title" content="Honestly Biased | Independent Commentary, Satire & News Analysis">
     <meta property="og:description" content="We reject the corporate veneer of fake neutrality. Explore transparent perspectives shaping Indian politics and society.">
-    <meta property="og:image" content="./assets/hero-bg.png">
+    <meta property="og:image" content="https://www.honestlybiased.com/assets/hero-bg.png">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.honestlybiased.com/">
+    <meta property="og:site_name" content="Honestly Biased">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Honestly Biased | Independent Commentary, Satire & News Analysis">
+    <meta name="twitter:description" content="We reject the corporate veneer of fake neutrality. Explore transparent perspectives shaping Indian politics and society.">
+    <meta name="twitter:image" content="https://www.honestlybiased.com/assets/hero-bg.png">
+    <meta name="twitter:site" content="@honestlybiased">
 
     <title>Honestly Biased | Independent Commentary, Satire & News Analysis</title>
 
-    <!-- Google Fonts: Outfit (Body & UI text) & Space Grotesk (Punchy, bold geometric sans-serif for titles) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.honestlybiased.com/">
+
+    <!-- Preconnect for critical third-party origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+
+    <!-- DNS prefetch for remaining -->
+    <link rel="dns-prefetch" href="https://assets.mixkit.co">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Honestly Biased",
+      "url": "https://www.honestlybiased.com/",
+      "description": "Independent Commentary, Satire & Political Audit. We reject the veneer of fake corporate neutrality, choosing transparent perspective and sharp political commentary.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Honestly Biased",
+        "url": "https://www.honestlybiased.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.honestlybiased.com/assets/logo.png"
+        },
+        "sameAs": [
+          "https://www.facebook.com/honestlybiasedOfficial",
+          "https://twitter.com/honestlybiased",
+          "https://www.youtube.com/@honestlybiased",
+          "https://www.instagram.com/honestlybiased"
+        ]
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.honestlybiased.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Honestly Biased",
+      "url": "https://www.honestlybiased.com/",
+      "logo": "https://www.honestlybiased.com/assets/logo.png",
+      "sameAs": [
+        "https://www.facebook.com/honestlybiasedOfficial",
+        "https://twitter.com/honestlybiased",
+        "https://www.youtube.com/@honestlybiased",
+        "https://www.instagram.com/honestlybiased"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Hindi"],
+        "url": "https://www.honestlybiased.com/collective"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": "The Illusion of Consensus: Bending the Corporate News Narrative",
+      "description": "Traditional news chambers claim to deliver pure, unvarnished objective truth. We say that is a convenient myth. Let us look closer—and biasedly—at the corporate lobbying, administrative inertia, and policy loopholes rewriting the agrarian economy under the cover of artificial neutrality.",
+      "image": "https://www.honestlybiased.com/assets/hero-bg.png",
+      "author": {
+        "@type": "Person",
+        "name": "Aniket Verma",
+        "description": "Senior Bias Analyst"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Honestly Biased",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.honestlybiased.com/assets/logo.png"
+        }
+      },
+      "datePublished": "2026-07-01T00:00:00+05:30",
+      "dateModified": "2026-07-01T00:00:00+05:30",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://www.honestlybiased.com/article/illusion-of-consensus"
+      }
+    }
+    </script>
+
+    <!-- Google Fonts: Outfit (Body & Space Grotesk (Punchy, bold geometric sans-serif for titles) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 
     <!-- Lucide Icons via CDN for clean vector UI symbols -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.453.0"></script>
+
+    <!-- Preload hero image for LCP -->
+    <link rel="preload" as="image" href="./assets/hero-bg.webp" type="image/webp">
+    <link rel="preload" as="image" href="./assets/hero-bg.avif" type="image/avif">
 
     <!-- Core Stylesheet -->
     <link rel="stylesheet" href="style.css">
@@ -77,7 +184,7 @@
     <main id="main-content">
 
         <!-- Dynamic Premium Region Selector Bar (Top of Page) -->
-        <div class="top-region-bar glass-element">
+        <nav class="top-region-bar glass-element" aria-label="Edition selector">
             <div class="top-region-container">
                 <div class="region-tabs-container" id="region-tabs-container">
                     <div class="active-indicator-pill" id="region-active-pill"></div>
@@ -95,14 +202,22 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </nav>
 
         <!-- HERO SECTION (Featuring Three.js "Perspective Refraction Lens" over Key Story) -->
         <section class="hero-section" id="politics">
             <!-- Three.js Canvas Container -->
             <div class="lens-canvas-container" id="lens-canvas-container" data-src="./assets/hero-bg.png">
-                <!-- Fallback standard image in case JS/WebGL is disabled -->
-                <img src="./assets/hero-bg.png" alt="Featured Story Editorial Graphic" class="hero-fallback-img">
+                <!-- Responsive fallback images with WebP/AVIF -->
+                <picture>
+                    <source type="image/avif" srcset="./assets/hero-bg.avif">
+                    <source type="image/webp" srcset="
+                        ./assets/hero-bg-400w.webp 400w,
+                        ./assets/hero-bg-800w.webp 800w,
+                        ./assets/hero-bg.webp 1024w
+                    " sizes="(max-width: 480px) 400px, (max-width: 900px) 800px, 1024px">
+                    <img src="./assets/hero-bg.png" alt="Featured Story Editorial Graphic" class="hero-fallback-img">
+                </picture>
                 <div class="lens-overlay"></div>
             </div>
 
@@ -132,7 +247,7 @@
                                 <span class="author-title" data-bind="byline_role">Senior Bias Analyst</span>
                             </div>
                         </div>
-                        <a href="#/article/featured-story" class="btn btn-primary" aria-label="Read full analysis">
+                        <a href="/article/illusion-of-consensus" class="btn btn-primary" aria-label="Read full analysis">
                             <span data-bind="cta">Expose The Script</span>
                             <i data-lucide="arrow-up-right"></i>
                         </a>
@@ -466,12 +581,12 @@
             <div class="footer-links-column">
                 <h4 class="footer-heading">Sections</h4>
                 <ul class="footer-links-list">
-                    <li><a href="#/politics">Politics</a></li>
+                    <li><a href="/politics">Politics</a></li>
 
-                    <li><a href="#/tech">Tech</a></li>
-                    <li><a href="#/finance">Finance</a></li>
-                    <li><a href="#/entertainment">Entertainment</a></li>
-                    <li><a href="#/health">Health</a></li>
+                    <li><a href="/tech">Tech</a></li>
+                    <li><a href="/finance">Finance</a></li>
+                    <li><a href="/entertainment">Entertainment</a></li>
+                    <li><a href="/health">Health</a></li>
                 </ul>
             </div>
 
@@ -479,11 +594,11 @@
             <div class="footer-links-column" data-site-content-block="standards">
                 <h4 class="footer-heading">Standards</h4>
                 <ul class="footer-links-list" id="standards-list">
-                    <li><a href="#manifesto">Our Manifesto</a></li>
-                    <li><a href="#">Editorial Standards</a></li>
-                    <li><a href="#">Independent Funding Audit</a></li>
-                    <li><a href="#">Financial Integrity reports</a></li>
-                    <li><a href="#">Join the Collective</a></li>
+                    <li><a href="/manifesto">Our Manifesto</a></li>
+                    <li><a href="/standards">Editorial Standards</a></li>
+                    <li><a href="/funding">Independent Funding Audit</a></li>
+                    <li><a href="/finances">Financial Integrity Reports</a></li>
+                    <li><a href="/collective">Join the Collective</a></li>
                 </ul>
             </div>
 
@@ -516,13 +631,13 @@
                 <a href="https://www.facebook.com/honestlybiasedOfficial" target="_blank" rel="noopener noreferrer" aria-label="Facebook connection">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/></svg>
                 </a>
-                <a href="#" aria-label="Twitter connection">
+                <a href="https://twitter.com/honestlybiased" target="_blank" rel="noopener noreferrer" aria-label="Twitter connection">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 </a>
-                <a href="#" aria-label="Youtube channel">
+                <a href="https://www.youtube.com/@honestlybiased" target="_blank" rel="noopener noreferrer" aria-label="YouTube channel">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                 </a>
-                <a href="#" aria-label="Podcast channel">
+                <a href="https://www.instagram.com/honestlybiased" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2c-3.31 0-6 2.69-6 6v5c0 3.31 2.69 6 6 6s6-2.69 6-6V8c0-3.31-2.69-6-6-6zm4 11c0 2.21-1.79 4-4 4s-4-1.79-4-4V8c0-2.21 1.79-4 4-4s4 1.79 4 4v5zm-4 7c-4.42 0-8-3.58-8-8H2c0 5.14 3.82 9.4 8.88 9.94v2.06h2.24v-2.06c5.06-.54 8.88-4.8 8.88-9.94h-2c0 4.42-3.58 8-8 8z"/></svg>
                 </a>
             </div>
