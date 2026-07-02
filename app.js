@@ -437,28 +437,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     let rhetoricMeterHTML = "";
-    let manifestoHTML = "";
     let expressBiasHTML = "";
-    let podcastHTML = "";
-    let VaranasiDocHTML = "";
-    let civicPollHTML = "";
 
     const gridContainer = document.getElementById('dynamic-bento-grid');
 
     // Capture the static layout fixtures on initial load to preserve premium styles
     const card2 = document.getElementById('card-2');
-    const card3 = document.getElementById('manifesto');
     const card4 = document.getElementById('card-4');
-    const card5 = document.getElementById('card-5');
-    const card6 = document.getElementById('card-6');
-    const card7 = document.getElementById('card-7');
 
     rhetoricMeterHTML = card2 ? card2.outerHTML : "";
-    manifestoHTML = card3 ? card3.outerHTML : "";
     expressBiasHTML = card4 ? card4.outerHTML : "";
-    podcastHTML = card5 ? card5.outerHTML : "";
-    VaranasiDocHTML = card6 ? card6.outerHTML : "";
-    civicPollHTML = card7 ? card7.outerHTML : "";
 
     async function loadDynamicArticles() {
         console.log("📡 Fetching site_content blocks first, then live feed...");
@@ -726,7 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 // Append persistent widgets anyway only if category filter is 'all'
                 if (categoryFilter === 'all') {
-                    gridContainer.innerHTML += rhetoricMeterHTML + manifestoHTML + expressBiasHTML + podcastHTML + VaranasiDocHTML + civicPollHTML;
+                    gridContainer.innerHTML += rhetoricMeterHTML + expressBiasHTML;
                 }
                 lucide.createIcons();
                 return;
@@ -827,14 +815,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // If showing 'all', we interlace at perfect visual intervals.
         if (categoryFilter === 'all') {
             if (gridItems.length > 1) gridItems.splice(1, 0, rhetoricMeterHTML);
-            if (gridItems.length > 2) gridItems.splice(2, 0, manifestoHTML);
             if (gridItems.length > 4) gridItems.splice(4, 0, expressBiasHTML);
-            if (gridItems.length > 5) gridItems.splice(5, 0, podcastHTML);
-            if (gridItems.length > 7) gridItems.splice(7, 0, VaranasiDocHTML);
-            if (gridItems.length > 9) gridItems.splice(9, 0, civicPollHTML);
             
             // Append any leftovers
-            if (gridItems.length <= 1) gridItems.push(rhetoricMeterHTML, manifestoHTML, expressBiasHTML, podcastHTML, VaranasiDocHTML, civicPollHTML);
+            if (gridItems.length <= 1) gridItems.push(rhetoricMeterHTML, expressBiasHTML);
         } else {
             // "each tab should have its own space" - do not append global widgets to category-specific views!
         }

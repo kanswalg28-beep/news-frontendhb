@@ -379,24 +379,6 @@
                     </div>
                 </section>
 
-                <!-- 3. BENTO CARD: MANIFESTO QUOTE (Span 1x1 on desktop) -->
-                <!-- BACKEND DEV: Bind editorial opinions, quotes, and expert details -->
-                <blockquote class="bento-card bento-span-1x1 glass-element quote-card" id="manifesto" data-site-content-block="manifesto">
-                    <div class="quote-header">
-                        <i data-lucide="quote" class="quote-icon"></i>
-                        <span class="card-tag" data-bind="heading">Our Manifesto</span>
-                    </div>
-                    <div class="quote-body">
-                        <p class="quote-text">
-                            <span data-bind="body">"Objective journalism is a corporate shield. The moment you select which stories to cover or which quotes to crop, bias exists. We just choose to be honest about ours."</span>
-                        </p>
-                    </div>
-                    <div class="quote-author-meta">
-                        <span class="quote-author-name" data-bind="author">Dr. Rupa Murthy</span>
-                        <span class="quote-author-title" data-bind="role">Editor-in-Chief, Honestly Biased</span>
-                    </div>
-                </blockquote>
-
                 <!-- 4. BENTO CARD: QUICK FEED NEWS (Span 1x1 on desktop) -->
                 <!-- BACKEND DEV: Loop and output latest quick short bullet updates -->
                 <aside class="bento-card bento-span-1x1 glass-element feed-card" id="card-4">
@@ -422,89 +404,12 @@
 
                 <!-- 5. BENTO CARD: AUDIO/PODCAST TILE (Span 1x1 on desktop) -->
                 <!-- BACKEND DEV: Bind dynamic audio player URL, length, and title -->
-                <section class="bento-card bento-span-1x1 glass-element audio-card" id="card-5" data-site-content-block="podcast">
-                    <div class="audio-header">
-                        <span class="card-tag saffron-bg" data-bind="label">Podcast</span>
-                        <span class="audio-duration" data-bind="runtime">34:10 Min</span>
-                    </div>
-                    <div class="audio-body">
-                        <h3 class="card-title" data-bind="title">Honestly Biased Dialogues: Dissecting Editorial Gag Orders</h3>
-                        <p class="card-summary small-summary" data-bind="blurb">
-                            We sit down with former editors to chart how corporate balance sheets silently dictate the limits of prime-time debates.
-                        </p>
-                    </div>
-                    <div class="audio-player-ui">
-                        <button class="play-btn-circle" aria-label="Play podcast episode" data-bind="play_label">
-                            <i data-lucide="play" class="play-icon"></i>
-                        </button>
-                        <div class="audio-progress-bar">
-                            <div class="audio-progress" style="width: 25%"></div>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- 6. BENTO CARD: HIGH IMPACT STORY WITH VIDEO PREVIEW (Span 2x1 on desktop) -->
                 <!-- BACKEND DEV: Inject dynamic video asset, thumbnail, and category details -->
-                <article class="bento-card bento-span-2x1 glass-element video-preview-card" id="card-6" data-site-content-block="featured" data-featured-id="varanasi">
-                    <div class="card-visual">
-                        <!-- HTML5 Video Component with Fallback Poster -->
-                        <video class="card-video-element" id="card-6-video" preload="metadata" poster="./assets/hero-bg.png" playsinline loop muted>
-                            <source src="https://assets.mixkit.co/videos/preview/mixkit-handloom-weaver-working-on-a-loom-41885-large.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                        <span class="card-tag green-bg" data-bind="category">Tech</span>
-                        <span class="video-duration-badge"><i data-lucide="clock" style="width:10px; height:10px; display:inline-block; margin-right:2px; vertical-align:middle;"></i><span data-bind="meta">14:20</span></span>
-                        
-                        <!-- Floating Video Play Overlay -->
-                        <button class="video-play-overlay" aria-label="Play documentary video preview">
-                            <span class="ripple-outer"></span>
-                            <span class="ripple-inner"><i data-lucide="play" class="video-icon"></i></span>
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <span class="card-time"><i data-lucide="clock"></i> <span data-bind="ago">1 Day Ago</span></span>
-                        <h3 class="card-title">
-                            <a href="#" data-bind="title">The Craftsmen of Varanasi: Weaving Through Algorithmic Disruption</a>
-                        </h3>
-                        <p class="card-summary">
-                            Our special report tracking how traditional handloom weavers are resisting automated replica algorithms and mass-produced synthetic chains.
-                        </p>
-                        <div class="card-footer-meta">
-                            <span class="card-author">By <span data-bind="author">Meenakshi Iyer</span></span>
-                            <span class="card-action"><i data-lucide="video"></i> <span data-bind="doc_meta">14:20 Documentary</span></span>
-                        </div>
-                    </div>
-                </article>
 
                 <!-- 7. BENTO CARD: INTERACTIVE CIVIC POLL (Span 1x1 on desktop) -->
                 <!-- BACKEND DEV: Bind active survey question, options, and track votes in state -->
-                <section class="bento-card bento-span-1x1 glass-element poll-card" id="card-7" data-site-content-block="poll">
-                    <div class="poll-header">
-                        <h3 class="poll-title"><i data-lucide="vote" class="poll-icon"></i> <span data-bind="heading">Narrative Pulse</span></h3>
-                        <span class="card-tag">Interactive</span>
-                    </div>
-                    <div class="poll-body">
-                        <p class="poll-question" data-bind="prompt">Do you believe corporate media news outlets can ever deliver genuinely objective reporting?</p>
-                        
-                        <form class="poll-form" id="civic-poll-form">
-                            <button type="button" class="poll-option-btn" data-poll-id="no" data-bind="option_template">
-                                <span class="poll-option-text" data-bind="label">No, ownership dictates bias</span>
-                                <span class="poll-bar" style="width: 74%;"></span>
-                                <span class="poll-percentage">74%</span>
-                            </button>
-                            <button type="button" class="poll-option-btn" data-poll-id="yes" data-bind="option_template">
-                                <span class="poll-option-text" data-bind="label">Yes, under regulatory separation</span>
-                                <span class="poll-bar" style="width: 18%;"></span>
-                                <span class="poll-percentage">18%</span>
-                            </button>
-                            <button type="button" class="poll-option-btn" data-poll-id="myth" data-bind="option_template">
-                                <span class="poll-option-text" data-bind="label">Impartiality is a systemic myth anyway</span>
-                                <span class="poll-bar" style="width: 8%;"></span>
-                                <span class="poll-percentage">8%</span>
-                            </button>
-                        </form>
-                    </div>
-                </section>
 
 
 
@@ -603,7 +508,6 @@
             <div class="footer-links-column" data-site-content-block="standards">
                 <h4 class="footer-heading">Standards</h4>
                 <ul class="footer-links-list" id="standards-list">
-                    <li><a href="/manifesto">Our Manifesto</a></li>
                     <li><a href="/standards">Editorial Standards</a></li>
                     <li><a href="/funding">Independent Funding Audit</a></li>
                     <li><a href="/finances">Financial Integrity Reports</a></li>
