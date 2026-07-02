@@ -519,62 +519,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const mockCaptions = [
-        "Why Bangalore VCs are funding edge-computing soil sensors instead of basic water pipelines for dryland farmers.",
-        "A food delivery aggregator app rolls out a 2-minute wellness checkup for delivery riders to optimize their performance while avoiding basic medical insurance liabilities.",
-        "A consulting giant HR team pioneers the revolutionary strategy of scheduling pre-meetings to prepare for the planning sessions.",
-        "Ministry of Digital Coordination launches a new digital dashboard to track the progress of other digital dashboards.",
-        "Legacy prime-time newsroom holds a 1-hour panel debate on whether social media comedy reels are destroying journalistic objectivity."
-    ];
+            "Why Bangalore VCs are funding edge-computing soil sensors instead of basic water pipelines for dryland farmers.",
+            "A food delivery aggregator app rolls out a 2-minute wellness checkup for delivery riders to optimize their performance while avoiding basic medical insurance liabilities.",
+            "A consulting giant HR team pioneers the revolutionary strategy of scheduling pre-meetings to prepare for the planning sessions.",
+            "Ministry of Digital Coordination launches a new digital dashboard to track the progress of other digital dashboards.",
+            "Legacy prime-time newsroom holds a 1-hour panel debate on whether social media comedy reels are destroying journalistic objectivity."
+        ];
 
-    const mockShortcodes = [
-        "CP84tADtE4g",
-        "C-19t_5uF6n",
-        "C5y2G42t7gB",
-        "C844oV6t9gA",
-        "C9-y4x2t1a8"
-    ];
+        const mockShortcodes = [
+            "CP84tADtE4g",
+            "C-19t_5uF6n",
+            "C5y2G42t7gB",
+            "C844oV6t9gA",
+            "C9-y4x2t1a8"
+        ];
 
-    if (btnIgSimulate) {
-        btnIgSimulate.addEventListener('click', async () => {
-            btnIgSimulate.disabled = true;
+        if (btnIgSimulate) {
+            btnIgSimulate.addEventListener('click', async () => {
+                btnIgSimulate.disabled = true;
             
-            const randomIdx = Math.floor(Math.random() * mockCaptions.length);
-            const shortcode = mockShortcodes[randomIdx];
-            const caption = mockCaptions[randomIdx];
-            
-            const payload = {
-                mediaId: `ig_reel_${Date.now()}`,
-                shortcode: shortcode,
-                permalink: `https://www.instagram.com/p/${shortcode}/`,
-                caption: caption
-            };
+                const randomIdx = Math.floor(Math.random() * mockCaptions.length);
+                const shortcode = mockShortcodes[randomIdx];
+                const caption = mockCaptions[randomIdx];
 
-            igAutomationLog.textContent += `\n[Simulating Post Event] Sending webhook trigger for reel ${shortcode}...`;
-            igAutomationLog.scrollTop = igAutomationLog.scrollHeight;
+                igAutomationLog.textContent += `\n[Simulating Post Event] Sending webhook trigger for reel ${shortcode}...`;
+                igAutomationLog.scrollTop = igAutomationLog.scrollHeight;
 
-            try {
-                const response = await fetch('/api/instagram/webhook', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    const response = await fetch('/api/admin/instagram?action=simulate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
 
-                if (response.ok) {
-                    // Instantly reload articles database cache
-                    await loadCMSData();
-                    await loadInstagramConfig();
-                } else {
-                    const errData = await response.json();
-                    alert(`Simulation failed: ${errData.error || 'Server error'}`);
+                    if (response.ok) {
+                        // Instantly reload articles database cache
+                        await loadCMSData();
+                        await loadInstagramConfig();
+                    } else {
+                        const errData = await response.json();
+                        alert(`Simulation failed: ${errData.error || 'Server error'}`);
+                    }
+                } catch (err) {
+                    console.error("Simulation failed:", err);
+                    alert("Cannot connect to server.");
+                } finally {
+                    btnIgSimulate.disabled = false;
                 }
-            } catch (err) {
-                console.error("Simulation failed:", err);
-                alert("Cannot connect to server.");
-            } finally {
-                btnIgSimulate.disabled = false;
-            }
-        });
-    }
+            });
+        }
 
     // Live logging polling (stream logs every 3 seconds)
     setInterval(loadInstagramConfig, 3000);
@@ -679,7 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnExportSubscribers) {
         btnExportSubscribers.addEventListener('click', () => {
             // Simply open the export route in a new tab or window, which triggers file download
-            window.open('/api/admin/subscribers/export', '_blank');
+            window.open('/api/admin/subscribers?export=csv', '_blank');
         });
     }
 

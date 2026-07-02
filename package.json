@@ -10,7 +10,6 @@
     "build": "npm run build:images && npm run build:sitemap"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.39.4",
     "compression": "^1.7.4",
     "dotenv": "^17.4.2",
