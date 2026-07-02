@@ -1,6 +1,8 @@
 // admin/articles/[id].js – Serverless API for updating/deleting a specific article
 // Uses Supabase client (db/client.js) for persistence
 // Optional Basic Auth same as parent endpoint
+// CSRF protection via X-CSRF-Token header
+// HTML sanitization on fullblog field
 
 const { supabase } = require('../../../db/client');
 
@@ -16,6 +18,46 @@ function basicAuth(req) {
   );
 }
 
+// Simple CSRF validation
+function validateCsrf(req) {
+  const csrf = req.headers['x-csrf-token'];
+  return !!csrf;
+}
+
+// HTML sanitization for fullblog field
+function sanitizeHtml(html) {
+  if (!html || typeof html !== 'string') return '';
+  
+  const allowedTags = ['p', 'b', 'i', 'em', 'strong', 'blockquote', 'a', 'ul', 'ol', 'li', 'h2', 'h3', 'br', 'hr'];
+  const allowedAttrs = {
+    'a': ['href', 'target', 'rel'],
+    'blockquote': ['class']
+  };
+  
+  let sanitized = html;
+  
+  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  sanitized = sanitized.replace(/on\w+="[^"]*"/gi, '');
+  sanitized = sanitized.replace(/on\w+='[^']*'/gi, '');
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  
+  const tagRegex = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+  sanitized = sanitized.replace(tagRegex, (match, tagName) => {
+    if (allowedTags.includes(tagName.toLowerCase())) {
+      return match.replace(/\s+\w+="[^"]*"/g, (attr) => {
+        const attrName = attr.match(/^\s+(\w+)=/)[1];
+        if (allowedAttrs[tagName.toLowerCase()]?.includes(attrName.toLowerCase())) {
+          return attr;
+        }
+        return '';
+      });
+    }
+    return '';
+  });
+  
+  return sanitized;
+}
+
 module.exports = async (req, res) => {
   // Enforce auth if env vars set
   if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
@@ -26,7 +68,7 @@ module.exports = async (req, res) => {
   }
 
   const { method, query, body } = req;
-  const articleId = query.id; // Vercel provides the param as query.id
+  const articleId = query.id;
 
   if (!articleId) {
     return res.status(400).json({ error: 'Missing article ID' });
@@ -34,7 +76,12 @@ module.exports = async (req, res) => {
 
   try {
     if (method === 'PUT') {
-      const updatePayload = { ...body };
+      // CSRF validation
+      if (!validateCsrf(req)) {
+        return res.status(403).json({ error: 'CSRF token missing or invalid' });
+      }
+      
+      const updatePayload = { ...body, fullblog: sanitizeHtml(body.fullblog || '') };
       if (updatePayload.publishdate) {
         updatePayload.publishdate = new Date(updatePayload.publishdate).toISOString();
         updatePayload.timeago = new Date(updatePayload.publishdate).toLocaleTimeString('en-IN', {
@@ -56,6 +103,11 @@ module.exports = async (req, res) => {
     }
 
     if (method === 'DELETE') {
+      // CSRF validation
+      if (!validateCsrf(req)) {
+        return res.status(403).json({ error: 'CSRF token missing or invalid' });
+      }
+      
       const { data, error } = await supabase
         .from('articles')
         .delete()

@@ -112,6 +112,21 @@ function escapeHtml(s) {
         .replace(/'/g, E.apos);
 }
 
+// Format date as "Jan 15, 2026" or similar readable format
+function formatDate(isoString) {
+    if (!isoString) return '';
+    try {
+        const date = new Date(isoString);
+        return date.toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+    } catch (e) {
+        return '';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // ==========================================================================
@@ -759,61 +774,63 @@ document.addEventListener('DOMContentLoaded', () => {
                     </article>
                 `);
             } else if (index === 3) {
-                // Render a mid-level horizontal powerhouse card (span 2x1) for rhythm variety
-                gridItems.push(`
-                    <article class="bento-card bento-span-2x1 glass-element video-preview-card ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
-                        <div class="card-visual">
-                            <div class="card-image-bg" style="background-image: url('${article.imageurl}'); filter: brightness(0.65) grayscale(0.25);"></div>
-                            <span class="card-tag green-bg">${article.category}</span>
-                            <span class="video-play-overlay"><i data-lucide="arrow-up-right"></i></span>
-                        </div>
-                        <div class="card-body">
-                            <span class="card-time" style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                                ${article.authortype === 'admin' 
-                                    ? '<span class="author-type-badge badge-admin"><i data-lucide="pen-tool" style="width:10px;height:10px;"></i> Editorial</span>' 
-                                    : (article.authortype === 'instagram'
-                                        ? '<span class="author-type-badge badge-instagram"><i data-lucide="instagram" style="width:10px;height:10px;"></i> 🎥 IG Video</span>'
-                                        : '<span class="author-type-badge badge-ai"><i data-lucide="cpu" style="width:10px;height:10px;"></i> AI Audited</span>')}
-                                <i data-lucide="clock" style="margin-left:4px;"></i> ${article.timeago}
-                            </span>
-                            <h3 class="card-title" style="margin-top:10px;">
-                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
-                            </h3>
-                            <p class="card-summary">${article.aisummary}</p>
-                            <div class="card-footer-meta">
-                                <span class="card-author" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">Bias Audit: ${article.biasaudit}</span>
-                            </div>
-                        </div>
-                    </article>
-                `);
-            } else {
-                // Render standard bento boxes (span 1x1)
-                gridItems.push(`
-                    <article class="bento-card bento-span-1x1 glass-element ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
-                        <div class="card-body header-only-body">
-                            <div class="card-tag-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                                <span class="card-tag saffron-bg" style="margin-bottom:0;">${article.category}</span>
-                                <span class="card-time" style="font-size:0.65rem; color:var(--text-muted); font-weight:700; display:flex; align-items:center; gap:2px;">
-                                    ${article.authortype === 'admin' 
-                                        ? '<span class="author-type-badge badge-admin" style="margin-right:2px; padding:2px 4px;"><i data-lucide="pen-tool" style="width:8px;height:8px;"></i> Edit</span>' 
-                                        : (article.authortype === 'instagram'
-                                            ? '<span class="author-type-badge badge-instagram" style="margin-right:2px; padding:2px 4px;"><i data-lucide="instagram" style="width:8px;height:8px;"></i> IG Video</span>'
-                                            : '<span class="author-type-badge badge-ai" style="margin-right:2px; padding:2px 4px;"><i data-lucide="cpu" style="width:8px;height:8px;"></i> AI</span>')}
-                                    ${article.timeago}
-                                </span>
-                            </div>
-                            <h3 class="card-title" style="margin-bottom:10px;">
-                                <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
-                            </h3>
-                            <p class="card-summary small-summary" style="display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${article.aisummary}</p>
-                            <div class="card-footer-meta" style="margin-top:auto; padding-top:12px; border-top:1px solid rgba(255,255,255,0.03);">
-                                <span class="card-author" style="font-size:0.68rem; color:var(--accent-green); font-weight:700; line-height:1.35; display:block;">Bias Audit: ${article.biasaudit}</span>
-                            </div>
-                        </div>
-                    </article>
-                `);
-            }
-        });
+                            // Render a mid-level horizontal powerhouse card (span 2x1) for rhythm variety
+                            gridItems.push(`
+                                <article class="bento-card bento-span-2x1 glass-element video-preview-card ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
+                                    <div class="card-visual">
+                                        <div class="card-image-bg" style="background-image: url('${article.imageurl}'); filter: brightness(0.65) grayscale(0.25);"></div>
+                                        <span class="card-tag green-bg">${article.category}</span>
+                                        <span class="video-play-overlay"><i data-lucide="arrow-up-right"></i></span>
+                                    </div>
+                                    <div class="card-body">
+                                        <span class="card-time" style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                                            ${article.authortype === 'admin' 
+                                                ? '<span class="author-type-badge badge-admin"><i data-lucide="pen-tool" style="width:10px;height:10px;"></i> Editorial</span>' 
+                                                : (article.authortype === 'instagram'
+                                                    ? '<span class="author-type-badge badge-instagram"><i data-lucide="instagram" style="width:10px;height:10px;"></i> 🎥 IG Video</span>'
+                                                    : '<span class="author-type-badge badge-ai"><i data-lucide="cpu" style="width:10px;height:10px;"></i> AI Audited</span>')}}
+                                            ${article.publishdate ? `<i data-lucide="calendar" style="margin-left:8px;"></i> ${formatDate(article.publishdate)}` : ''}
+                                            <i data-lucide="clock" style="margin-left:4px;"></i> ${article.timeago}
+                                        </span>
+                                        <h3 class="card-title" style="margin-top:10px;">
+                                            <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
+                                        </h3>
+                                        <p class="card-summary">${article.aisummary}</p>
+                                        <div class="card-footer-meta">
+                                            <span class="card-author" style="font-size:0.75rem; color:var(--accent-green); font-weight:700;">Bias Audit: ${article.biasaudit}</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            `);
+                        } else {
+                            // Render standard bento boxes (span 1x1)
+                            gridItems.push(`
+                                <article class="bento-card bento-span-1x1 glass-element ${article.authortype === 'instagram' ? 'card-instagram' : ''}" id="${article.id}" style="opacity:0; transform:translateY(30px);">
+                                    <div class="card-body header-only-body">
+                                        <div class="card-tag-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                                            <span class="card-tag saffron-bg" style="margin-bottom:0;">${article.category}</span>
+                                            <span class="card-time" style="font-size:0.65rem; color:var(--text-muted); font-weight:700; display:flex; align-items:center; gap:2px;">
+                                                ${article.authortype === 'admin' 
+                                                    ? '<span class="author-type-badge badge-admin" style=" style="margin-right:2px; padding:2px 4px;"><i data-lucide="pen-tool" style="width:8px;height:8px;"></i> Edit</span>' 
+                                                    : (article.authortype === 'instagram'
+                                                        ? '<span class="author-type-badge badge-instagram style="margin-right:2px; padding:2px 4px;"><i data-lucide="instagram" style="width:8px;height:8px;"></i> IG Video</span>'
+                                                        : '<span class="author-type-badge badge-ai" style="margin-right:2px; padding:2px 4px;"><i data-lucide="cpu" style="width:8px;height:8px;"></i> AI</span>')}}
+                                                ${article.publishdate ? `<i data-lucide="calendar" style="margin-left:4px;"></i> ${formatDate(article.publishdate)}` : ''}
+                                                ${article.timeago}
+                                            </span>
+                                        </div>
+                                        <h3 class="card-title" style="margin-bottom:10px;">
+                                            <a href="#" class="stretched-link audit-trigger" data-id="${article.id}">${article.aiheadline}</a>
+                                        </h3>
+                                        <p class="card-summary small-summary" style="display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">${article.aisummary}</p>
+                                        <div class="card-footer-meta" style="margin-top:auto; padding-top:12px; border-top:1px solid rgba(255,255,255,0.03);">
+                                            <span class="card-author" style="font-size:0.68rem; color:var(--accent-green); font-weight:700; line-height:1.35; display:block;">Bias Audit: ${article.biasaudit}</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            `);
+                        }
+                    });
 
         // Interlace our layout fixtures dynamically based on the category filter
         // If showing 'all', we interlace at perfect visual intervals.

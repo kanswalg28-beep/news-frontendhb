@@ -41,16 +41,39 @@ function classifyRegion(title, description, rawContent, sourceName, urlText) {
   const contentText = (rawContent || "").toLowerCase();
   const srcNameText = (sourceName || "").toLowerCase();
   const urlStr = (urlText || "").toLowerCase();
+
   const indiaKeywords = ["india","indian","delhi","mumbai","bengaluru","bangalore","chennai","kolkata","hyderabad","pune","ahmedabad","lucknow","varanasi","kerala","goa","gujarat","punjab","sikh","modi","bjp","congress","gandhi","amit shah","kejriwal","rahul gandhi","rupee","bollywood","virat kohli"];
   const ukKeywords = ["uk","united kingdom","britain","british","england","english","london","scotland","welsh","belfast","sunak","starmer","downing street","keir starmer","rishi sunak","boris johnson","westminster","buckingham","whitehall","nhs","pound","sterling","king charles","queen elizabeth","heathrow","manchester","birmingham","glasgow","edinburgh","cardiff"];
-  let indiaCount = 0, ukCount = 0;
+  const berkshireKeywords = ["berkshire", "reading", "slough", "maidenhead", "windsor", "newbury", "bracknell", "wokingham", "earley", "woodley", "twenty", "crowthorne", "sandhurst", "thames valley", "m4 corridor", "royal borough", "legoland", "microsoft reading", "oracle reading", "berkshire county", "west berkshire"];
+
+  let indiaCount = 0, ukCount = 0, berkshireCount = 0;
   const combined = `${titleText} ${descText} ${contentText} ${srcNameText} ${urlStr}`;
-  indiaKeywords.forEach(kw => { const r = new RegExp(`\\b${kw.replace(/[-\\/\\^$*+?.()|[\\]{}]/g, '\\$&')}\\b`, 'g'); const m = combined.match(r); if (m) indiaCount += m.length; });
-  ukKeywords.forEach(kw => { const r = new RegExp(`\\b${kw.replace(/[-\\/\\^$*+?.()|[\\]{}]/g, '\\$&')}\\b`, 'g'); const m = combined.match(r); if (m) ukCount += m.length; });
+  
+  indiaKeywords.forEach(kw => { 
+    const r = new RegExp(`\\b${kw.replace(/[-\\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g'); 
+    const m = combined.match(r); 
+    if (m) indiaCount += m.length; 
+  });
+  
+  ukKeywords.forEach(kw => { 
+    const r = new RegExp(`\\b${kw.replace(/[-\\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g'); 
+    const m = combined.match(r); 
+    if (m) ukCount += m.length; 
+  });
+  
+  berkshireKeywords.forEach(kw => { 
+    const r = new RegExp(`\\b${kw.replace(/[-\\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g'); 
+    const m = combined.match(r); 
+    if (m) berkshireCount += m.length; 
+  });
+  
   if (urlStr.includes('.in/') || urlStr.endsWith('.in') || urlStr.includes('.co.in')) indiaCount += 5;
   if (urlStr.includes('.co.uk') || urlStr.includes('.gov.uk') || urlStr.includes('bbc.co.uk')) ukCount += 5;
-  if (indiaCount > 0 && indiaCount >= ukCount) return "indian";
-  if (ukCount > 0 && ukCount > indiaCount) return "uk";
+  if (urlStr.includes('berkshire') || urlStr.includes('reading') || urlStr.includes('windsor')) berkshireCount += 5;
+  
+  if (indiaCount > 0 && indiaCount >= ukCount && indiaCount >= berkshireCount) return "indian";
+  if (ukCount > 0 && ukCount > indiaCount && ukCount >= berkshireCount) return "uk";
+  if (berkshireCount > 0 && berkshireCount > indiaCount && berkshireCount > ukCount) return "berkshire";
   return "world";
 }
 
@@ -58,7 +81,7 @@ function classifyRegion(title, description, rawContent, sourceName, urlText) {
 // Only called from the background refresh path.
 async function rebuildCacheFromGNews() {
   const rawArticles = [];
-  const regions = [{tag:'indian', code:'in'}, {tag:'world', code:'us'}, {tag:'uk', code:'gb'}];
+  const regions = [{tag:'indian', code:'in'}, {tag:'world', code:'us'}, {tag:'uk', code:'gb'}, {tag:'berkshire', code:'berkshire'}];
   const categories = ['general', 'technology', 'business', 'entertainment', 'health'];
 
   for (const reg of regions) {

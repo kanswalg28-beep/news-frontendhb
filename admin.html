@@ -8,13 +8,20 @@
     <!-- Google Fonts: Outfit (Body/UI) & Space Grotesk (Titles) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
     
     <!-- Lucide Icons via CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.453.0"></script>
+    
+    <!-- CSP Meta (backup for browsers that don't support header) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none';">
     
     <!-- Core Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- CSRF Token (generated server-side, injected here) -->
+    <meta name="csrf-token" content="" id="csrf-token">
     
     <style>
         /* SPECIFIC DEDICATED HIGH-FIDELITY CMS DASHBOARD INTERFACE STYLES */
@@ -653,9 +660,69 @@
                 justify-content: center;
             }
         }
+        
+        /* Toast Notifications */
+        #toast-container {
+            pointer-events: none;
+        }
+        .toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: var(--border-radius-sm);
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: blur(20px);
+            min-width: 280px;
+            max-width: 400px;
+            transform: translateX(120%);
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s;
+        }
+        .toast.toast-show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .toast-info { border-left: 4px solid var(--accent-cyan); }
+        .toast-success { border-left: 4px solid var(--accent-green); }
+        .toast-error { border-left: 4px solid var(--accent-crimson); }
+        .toast-warning { border-left: 4px solid var(--accent-gold); }
+        .toast-message { color: var(--text-primary); font-size: 0.85rem; line-height: 1.4; }
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            transition: color var(--transition-fast);
+        }
+        .toast-close:hover { color: var(--text-primary); }
+        
+        /* Spin animation for loading */
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        /* Focus visible for admin buttons */
+        .btn-action:focus-visible,
+        .file-upload-btn:focus-visible,
+        .btn-live-feed:focus-visible,
+        .btn-primary:focus-visible,
+        .btn-secondary:focus-visible {
+            outline: 3px solid var(--accent-saffron);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body class="dark-theme">
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+    
     <div class="cms-wrapper">
         <!-- HEADER CONTROL BANNER -->
         <header class="cms-header">
@@ -742,6 +809,7 @@
                                 <option value="indian">Indian Edition</option>
                                 <option value="world">World Edition</option>
                                 <option value="uk">UK Edition</option>
+                                <option value="berkshire">Berkshire Local</option>
                             </select>
                         </div>
                         
@@ -991,6 +1059,22 @@
                     <div>
                         <h2 class="modal-title" style="font-size: 1.35rem; font-weight:800; font-family:var(--font-heading); margin-bottom: 4px;">Ledger Chronicle Inventory</h2>
                         <p style="color:var(--text-muted); font-size:0.78rem; font-weight:600; margin:0;">Monitor and filter active database cached items, refine satire, or erase entries.</p>
+                    </div>
+                    <!-- Sort Controls -->
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <label for="cms-sort-by" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Sort by:</label>
+                        <select id="cms-sort-by" class="cms-select glass-element" style="width: auto; min-width: 160px; padding: 8px 12px; font-size: 0.75rem;">
+                            <option value="publishdate">Publish Date</option>
+                            <option value="aiheadline">Headline</option>
+                            <option value="category">Category</option>
+                            <option value="region">Region</option>
+                            <option value="authortype">Author Type</option>
+                        </select>
+                        <label for="cms-sort-order" style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Order:</label>
+                        <select id="cms-sort-order" class="cms-select glass-element" style="width: auto; min-width: 120px; padding: 8px 12px; font-size: 0.75rem;">
+                            <option value="desc">Newest First</option>
+                            <option value="asc">Oldest First</option>
+                        </select>
                     </div>
                 </div>
 

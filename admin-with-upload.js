@@ -1,11 +1,124 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // ==========================================================================
+    // CSRF TOKEN HANDLING
+    // ==========================================================================
+    function getCsrfToken() {
+        const meta = document.getElementById('csrf-token');
+        return meta ? meta.content : '';
+    }
+
+    function setCsrfToken(token) {
+        const meta = document.getElementById('csrf-token');
+        if (meta) meta.content = token;
+    }
+
+    // Fetch CSRF token on load
+    async function fetchCsrfToken() {
+        try {
+            const res = await fetch('/api/admin/csrf-token');
+            if (res.ok) {
+                const data = await res.json();
+                setCsrfToken(data.token);
+            }
+        } catch (e) {
+            console.warn('CSRF token fetch failed:', e);
+        }
+    }
+
+    // ==========================================================================
+    // TOAST NOTIFICATION SYSTEM
+    // ==========================================================================
+    function showToast(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toast-container') || createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'polite');
+        toast.innerHTML = `
+            <span class="toast-message">${escapeHtml(message)}</span>
+            <button class="toast-close" aria-label="Dismiss">&times;</button>
+        `;
+        container.appendChild(toast);
+        
+        // Animate in
+        requestAnimationFrame(() => toast.classList.add('toast-show'));
+        
+        // Auto dismiss
+        const timer = setTimeout(() => dismissToast(toast), duration);
+        
+        // Manual dismiss
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            clearTimeout(timer);
+            dismissToast(toast);
+        });
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        `;
+        document.body.appendChild(container);
+        return container;
+    }
+
+    function dismissToast(toast) {
+        toast.classList.remove('toast-show');
+        toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ==========================================================================
+    // LOADING STATE HELPERS
+    // ==========================================================================
+    function setLoading(button, loading = true) {
+        if (!button) return;
+        if (loading) {
+            button.dataset.originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i data-lucide="loader" class="spin" style="width:16px;height:16px;margin-right:8px;"></i> Working...';
+            lucide.createIcons();
+        } else {
+            button.disabled = false;
+            button.innerHTML = button.dataset.originalText || button.innerHTML;
+            lucide.createIcons();
+        }
+    }
+
+    // ==========================================================================
+    // STATE
+    // ==========================================================================
     let allArticles = [];
     let searchFilterQuery = "";
+    
+    // Pagination state
+    let currentPage = 1;
+    const pageSize = 20;
+    let totalPages = 1;
+    let totalArticles = 0;
+    let currentSortBy = 'publishdate';
+    let currentSortOrder = 'desc';
 
     // SELECT DOM ELEMENTS
     const adminArticlesList = document.getElementById('admin-articles-list');
     const cmsArticleForm = document.getElementById('cms-article-form');
     const searchInput = document.getElementById('cms-search');
+    
+    // Pagination DOM elements (will be created dynamically)
+    let paginationContainer = null;
 
     // STATS METRIC LABELS
     const statTotal = document.getElementById('stat-total');
@@ -53,26 +166,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroImageUploadStatus = document.getElementById('hero-image-upload-status');
     const heroPreviewImg = document.getElementById('hero-preview-img');
 
-    // AUDIENCE DIRECTORY DOM ELEMENTS
+    // HIGHLIGHTS FORM ELEMENTS
+    const highlightsForm = document.getElementById('cms-highlights-form');
+    const highlightsInput = document.getElementById('cms-highlights-input');
+    const btnHighlightsSubmit = document.getElementById('btn-highlights-submit');
+
+    // INSTAGRAM ELEMENTS
+    const igHandleInput = document.getElementById('ig-handle-input');
+    const igRssInput = document.getElementById('ig-rss-input');
+    const btnIgConnect = document.getElementById('btn-ig-connect');
+    const btnIgSync = document.getElementById('btn-ig-sync');
+    const btnIgSimulate = document.getElementById('btn-ig-simulate');
+    const igStatusBadge = document.getElementById('ig-status-badge');
+    const igAutomationLog = document.getElementById('ig-automation-log');
+
+    // AUDIENCE DIRECTORY
     const subscribersList = document.getElementById('subscribers-list');
     const subCountBadge = document.getElementById('sub-count-badge');
     const btnExportSubscribers = document.getElementById('btn-export-subscribers');
 
-    // ==========================================================================
-    // IMAGE UPLOAD UTILITIES
-    // ==========================================================================
+    // SORT CONTROLS
+    const sortBySelect = document.getElementById('cms-sort-by');
+    const sortOrderSelect = document.getElementById('cms-sort-order');
 
-    // Convert file to base64 data URL (for images < 500KB)
-    function fileToDataUrl(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+    // ==========================================================================
+    // IMAGE UPLOAD TO SERVER (not base64)
+    // ==========================================================================
+    async function uploadImageToServer(file, statusEl, btnEl) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+            showUploadStatus(statusEl, validation.error, 'error');
+            return null;
+        }
+
+        showUploadStatus(statusEl, `Uploading ${file.name}...`, 'info');
+        if (btnEl) btnEl.classList.add('uploading');
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await fetch('/api/admin/upload', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': getCsrfToken()
+                },
+                body: formData
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Upload failed');
+            }
+
+            const data = await res.json();
+            showUploadStatus(statusEl, `Uploaded: ${data.url}`, 'success');
+            if (btnEl) btnEl.classList.remove('uploading');
+            return data.url;
+        } catch (error) {
+            console.error('Image upload error:', error);
+            showUploadStatus(statusEl, error.message, 'error');
+            if (btnEl) btnEl.classList.remove('uploading');
+            return null;
+        }
     }
 
-    // Validate image file
     function validateImageFile(file, maxSizeMB = 2) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
@@ -84,46 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return { valid: true };
     }
 
-    // Upload image and return data URL or external URL
-    async function handleImageUpload(file, statusEl, btnEl, previewImg, urlInput) {
-        const validation = validateImageFile(file);
-        if (!validation.valid) {
-            showUploadStatus(statusEl, validation.error, 'error');
-            return null;
-        }
-
-        showUploadStatus(statusEl, `Processing ${file.name}...`, 'info');
-        if (btnEl) btnEl.classList.add('uploading');
-
-        try {
-            const dataUrl = await fileToDataUrl(file);
-            
-            // Update preview immediately
-            if (previewImg) previewImg.src = dataUrl;
-            if (urlInput) urlInput.value = dataUrl;
-            
-            showUploadStatus(statusEl, `Uploaded: ${file.name} (${formatFileSize(file.size)})`, 'success');
-            if (btnEl) btnEl.classList.remove('uploading');
-            
-            return dataUrl;
-        } catch (error) {
-            console.error('Image upload error:', error);
-            showUploadStatus(statusEl, 'Failed to process image', 'error');
-            if (btnEl) btnEl.classList.remove('uploading');
-            return null;
-        }
-    }
-
     function showUploadStatus(statusEl, message, type) {
         if (!statusEl) return;
         statusEl.textContent = message;
         statusEl.className = 'file-upload-status ' + type;
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
     }
 
     // Setup file upload handlers
@@ -135,11 +257,15 @@ document.addEventListener('DOMContentLoaded', () => {
         uploadInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                await handleImageUpload(file, statusEl, uploadBtn, previewImg, urlInput);
+                const url = await uploadImageToServer(file, statusEl, uploadBtn);
+                if (url) {
+                    if (previewImg) previewImg.src = url;
+                    if (urlInput) urlInput.value = url;
+                }
             }
         });
 
-        // Also support drag and drop on the preview area
+        // Drag and drop on preview area
         if (previewImg && previewImg.parentElement) {
             const wrapper = previewImg.parentElement;
             wrapper.addEventListener('dragover', (e) => {
@@ -158,8 +284,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = e.dataTransfer.files[0];
                 if (file) {
                     uploadInput.files = e.dataTransfer.files;
-                    await handleImageUpload(file, statusEl, uploadBtn, previewImg, urlInput);
+                    const url = await uploadImageToServer(file, statusEl, uploadBtn);
+                    if (url) {
+                        if (previewImg) previewImg.src = url;
+                        if (urlInput) urlInput.value = url;
+                    }
                 }
+            });
+        }
+    }
+
+    // Sync URL input changes to preview (existing functionality)
+    function setupUrlSync(urlInput, previewImg) {
+        if (!urlInput) return;
+        urlInput.addEventListener('input', () => {
+            const url = urlInput.value.trim();
+            if (previewImg) previewImg.src = url || "./assets/hero-bg.png";
+        });
+        if (previewImg) {
+            previewImg.addEventListener('error', () => {
+                previewImg.src = "./assets/hero-bg.png";
             });
         }
     }
@@ -167,88 +311,97 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize file uploads
     setupFileUpload(cmsImageUpload, cmsImageUploadBtn, cmsImageUploadStatus, cmsPreviewImg, cmsImageUrl);
     setupFileUpload(heroImageUpload, heroImageUploadBtn, heroImageUploadStatus, heroPreviewImg, heroImageUrl);
+    setupUrlSync(cmsImageUrl, cmsPreviewImg);
+    setupUrlSync(heroImageUrl, heroPreviewImg);
 
-    // Also sync URL input changes to preview (existing functionality)
-    if (cmsImageUrl) {
-        cmsImageUrl.addEventListener('input', () => {
-            const url = cmsImageUrl.value.trim();
-            if (url) {
-                cmsPreviewImg.src = url;
-            } else {
-                cmsPreviewImg.src = "./assets/hero-bg.png";
-            }
-        });
-        
-        cmsPreviewImg.addEventListener('error', () => {
-            cmsPreviewImg.src = "./assets/hero-bg.png";
-        });
-    }
+    // ==========================================================================
+    // API HELPER WITH CSRF
+    // ==========================================================================
+    async function apiRequest(path, options = {}) {
+        const csrf = getCsrfToken();
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+        if (csrf) headers['X-CSRF-Token'] = csrf;
 
-    if (heroImageUrl) {
-        heroImageUrl.addEventListener('input', () => {
-            const url = heroImageUrl.value.trim();
-            if (url) {
-                heroPreviewImg.src = url;
-            } else {
-                heroPreviewImg.src = "./assets/hero-bg.png";
-            }
+        const res = await fetch(path, {
+            ...options,
+            headers
         });
-        
-        heroPreviewImg.addEventListener('error', () => {
-            heroPreviewImg.src = "./assets/hero-bg.png";
-        });
+
+        if (res.status === 401) {
+            showToast('Session expired. Please refresh the page.', 'error');
+            setTimeout(() => window.location.reload(), 2000);
+            throw new Error('Unauthorized');
+        }
+
+        return res;
     }
 
     // ==========================================================================
-    // EXISTING CMS FUNCTIONALITY
+    // CMS DATA LOADING (with pagination)
     // ==========================================================================
-
-    // Load initial CMS data
     async function loadCMSData() {
         console.log("📡 Fetching CMS articles for hydration...");
         try {
-            const controller = ('AbortController' in window) ? new AbortController() : null;
-            const timeoutMs = 8000;
-            const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
-            const fetchInit = controller ? { signal: controller.signal } : {};
-            const response = await fetch('/api/admin/articles?_t=' + Date.now(), fetchInit);
-            if (timeoutId) clearTimeout(timeoutId);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            
+            const params = new URLSearchParams({
+                page: currentPage,
+                limit: pageSize,
+                sortBy: currentSortBy,
+                sortOrder: currentSortOrder
+            });
+            
+            const response = await fetch(`/api/admin/articles?${params.toString()}&_t=` + Date.now(), {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
             if (response.ok) {
                 const data = await response.json();
-                allArticles = Array.isArray(data) ? data : [];
-
+                // Handle both old format (array) and new format (object with pagination)
+                if (Array.isArray(data)) {
+                    allArticles = data;
+                    totalArticles = data.length;
+                    totalPages = 1;
+                } else {
+                    allArticles = data.articles || [];
+                    totalArticles = data.pagination?.total || allArticles.length;
+                    totalPages = data.pagination?.totalPages || 1;
+                    currentPage = data.pagination?.page || 1;
+                }
                 updateStatsMetrics();
                 populateManagerList();
+                renderPagination();
             } else {
                 console.error("Failed to load CMS articles:", response.status);
+                showToast('Failed to load articles', 'error');
             }
         } catch (error) {
-            console.error("CMS could not connect to server:", error);
+            if (error.name !== 'AbortError') {
+                console.error("CMS could not connect to server:", error);
+                showToast('Cannot connect to server', 'error');
+            }
         }
     }
 
-    // Dynamic stats metrics counter re-calculations
+    // ==========================================================================
+    // STATS & LIST RENDERING
+    // ==========================================================================
     function updateStatsMetrics() {
         if (!allArticles) return;
-
         const total = allArticles.length;
         const customCount = allArticles.filter(a => a.authortype === 'admin').length;
         const aiCount = allArticles.filter(a => a.authortype === 'ai' || a.authortype === 'instagram').length;
-
-        // Categories set
         const categoriesSeen = new Set();
-        allArticles.forEach(a => {
-            if (a.category) {
-                categoriesSeen.add(a.category.toLowerCase().trim());
-            }
-        });
-        const categoryCount = categoriesSeen.size || 0;
-
-        // Animate counter values
+        allArticles.forEach(a => { if (a.category) categoriesSeen.add(a.category.toLowerCase().trim()); });
         animateCounter(statTotal, total);
         animateCounter(statEditorial, customCount);
         animateCounter(statAi, aiCount);
-        animateCounter(statCategories, categoryCount);
+        animateCounter(statCategories, categoriesSeen.size);
     }
 
     function animateCounter(element, targetValue) {
@@ -256,12 +409,10 @@ document.addEventListener('DOMContentLoaded', () => {
         element.textContent = targetValue;
     }
 
-    // Populate the high-fidelity admin list cards
     function populateManagerList() {
         if (!adminArticlesList) return;
         adminArticlesList.innerHTML = '';
 
-        // Filter based on search input query
         const query = searchFilterQuery.toLowerCase().trim();
         const filtered = allArticles.filter(article => {
             const matchHeadline = article.aiheadline && article.aiheadline.toLowerCase().includes(query);
@@ -286,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filtered.forEach(article => {
             const card = document.createElement('div');
             card.className = 'admin-card-row';
+            card.setAttribute('role', 'listitem');
 
             let badgeClass = 'badge-ai';
             let badgeText = '🤖 AI Audited';
@@ -298,35 +450,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const cardImageUrl = article.imageurl || "./assets/hero-bg.png";
-
             let regionBadge = '🇮🇳 Indian';
             if (article.region === 'world') regionBadge = '🌐 World';
             else if (article.region === 'uk') regionBadge = '🇬🇧 UK';
 
             card.innerHTML = `
-                <!-- Thumbnail Cover Preview -->
-                <div class="admin-row-thumb" style="background-image: url('${cardImageUrl}')">
-                    <span class="admin-row-tag">${article.category}</span>
+                <div class="admin-row-thumb" style="background-image: url('${escapeHtml(cardImageUrl)}')">
+                    <span class="admin-row-tag">${escapeHtml(article.category)}</span>
                 </div>
-                
-                <!-- Card content meta -->
                 <div class="admin-row-body">
-                    <h3 class="admin-row-title">${article.aiheadline}</h3>
-                    
+                    <h3 class="admin-row-title">${escapeHtml(article.aiheadline)}</h3>
                     <div class="admin-row-meta">
-                        <span class="author-type-badge ${badgeClass}">${badgeText}</span>
-                        <span class="author-type-badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-glass);">${regionBadge}</span>
-                        <span><i data-lucide="globe"></i> ${article.originalsource || 'Honestly Biased'}</span>
-                        <span><i data-lucide="clock"></i> ${article.timeago}</span>
+                        <span class="author-type-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+                        <span class="author-type-badge" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-glass);">${escapeHtml(regionBadge)}</span>
+                        <span><i data-lucide="globe"></i> ${escapeHtml(article.originalsource || 'Honestly Biased')}</span>
+                        <span><i data-lucide="clock"></i> ${escapeHtml(article.timeago)}</span>
                     </div>
                 </div>
-                
-                <!-- Action triggers -->
                 <div class="admin-row-actions">
-                    <button class="btn-action act-edit" data-id="${article.id}" title="Refine Satirical Text">
+                    <button class="btn-action act-edit" data-id="${escapeHtml(article.id)}" title="Refine Satirical Text" aria-label="Edit article ${escapeHtml(article.aiheadline)}">
                         <i data-lucide="edit-3"></i>
                     </button>
-                    <button class="btn-action act-delete" data-id="${article.id}" title="Permanently Scrub News Card">
+                    <button class="btn-action act-delete" data-id="${escapeHtml(article.id)}" title="Permanently Scrub News Card" aria-label="Delete article ${escapeHtml(article.aiheadline)}">
                         <i data-lucide="trash-2"></i>
                     </button>
                 </div>
@@ -336,95 +481,195 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lucide.createIcons();
 
-        // Bind Edit buttons to load fields and transition state
+        // Bind Edit buttons
         adminArticlesList.querySelectorAll('.act-edit').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                const article = allArticles.find(a => String(a.id) === String(id));
-                if (article) {
-                    cmsArticleId.value = article.id;
-                    cmsCategory.value = article.category;
-                    cmsRegion.value = article.region || 'indian';
-                    cmsSource.value = article.originalsource || '';
-                    cmsHeadline.value = article.aiheadline;
-                    cmsBiasAudit.value = article.biasaudit;
-                    cmsSummary.value = article.aisummary;
-                    if (cmsFullBlog) cmsFullBlog.value = article.fullblog || '';
-                    cmsImageUrl.value = article.imageurl || '';
-                    cmsOriginalUrl.value = article.originalurl || '';
-                    if (cmsPublishDate) {
-                        if (article.publishdate) {
-                            // Convert ISO format to datetime-local string format (YYYY-MM-DDTHH:mm)
-                            const d = new Date(article.publishdate);
-                            const pad = num => String(num).padStart(2, '0');
-                            const localString = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-                            cmsPublishDate.value = localString;
-                        } else {
-                            cmsPublishDate.value = '';
-                        }
-                    }
-                    
-                    // Trigger live preview reload
-                    cmsPreviewImg.src = article.imageurl || "./assets/hero-bg.png";
-                    // Clear upload status
-                    if (cmsImageUploadStatus) {
-                        cmsImageUploadStatus.textContent = '';
-                        cmsImageUploadStatus.className = 'file-upload-status';
-                    }
-                    
-                    // Show edit mode headers
-                    cmsFormTitle.textContent = "Refine News Chronicle";
-                    cmsFormSubtitle.textContent = "Refine satirical headlines, critical summaries or narrative bias audits.";
-                    btnCmsSubmit.textContent = "Save Changes";
-                    btnCmsReset.style.display = "inline-flex";
-                    
-                    // Smoothly scroll the creator form into view on mobile screens
-                    document.querySelector('.cms-grid').scrollIntoView({ behavior: 'smooth' });
-                }
-            });
+            btn.addEventListener('click', () => loadArticleForEdit(btn.getAttribute('data-id')));
         });
 
-        // Bind Delete buttons to server DELETE endpoint
+        // Bind Delete buttons
         adminArticlesList.querySelectorAll('.act-delete').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                const article = allArticles.find(a => String(a.id) === String(id));
-                if (!article) return;
+            btn.addEventListener('click', () => deleteArticle(btn.getAttribute('data-id')));
+        });
+    }
 
-                if (confirm(`Scrub and erase "${article.aiheadline}" permanently from the database cache?`)) {
-                    try {
-                        const response = await fetch(`/api/admin/articles/${id}`, {
-                            method: 'DELETE'
-                        });
-                        
-                        if (response.ok) {
-                            console.log(`🗑️ Successfully deleted article ID: ${id}`);
-                            // Update local state instantly (0ms)
-                            allArticles = allArticles.filter(a => String(a.id) !== String(id));
-                            
-                            updateStatsMetrics();
-                            populateManagerList();
-                            
-                            // Reset form if we were currently editing the deleted article
-                            if (cmsArticleId.value === String(id)) {
-                                cancelEditMode();
-                            }
-                        } else {
-                            alert("Failed to delete the article from Express database cache.");
-                        }
-                    } catch (err) {
-                        console.error("Delete CMS request failed:", err);
-                        alert("Cannot connect to honestlybiasedOfficial backend server.");
-                    }
+    // ==========================================================================
+    // PAGINATION RENDERING
+    // ==========================================================================
+    function renderPagination() {
+        // Find or create pagination container
+        let container = document.getElementById('pagination-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'pagination-container';
+            container.style.cssText = `
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                margin-top: 24px;
+                padding: 16px;
+                flex-wrap: wrap;
+            `;
+            adminArticlesList.parentElement.appendChild(container);
+        }
+        
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = `
+            <div style="color: var(--text-muted); font-size: 0.85rem; margin-right: 16px;">
+                Page ${currentPage} of ${totalPages} (${totalArticles} total)
+            </div>
+        `;
+        
+        // Previous button
+        html += `
+            <button class="btn btn-secondary pagination-btn" 
+                    data-page="${currentPage - 1}" 
+                    ${currentPage <= 1 ? 'disabled' : ''}
+                    aria-label="Previous page">
+                <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+            </button>
+        `;
+        
+        // Page numbers
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        
+        if (startPage > 1) {
+            html += `<button class="btn btn-secondary pagination-btn" data-page="1">1</button>`;
+            if (startPage > 2) {
+                html += `<span style="color: var(--text-muted); padding: 0 8px;">...</span>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `
+                <button class="btn ${i === currentPage ? 'btn-primary' : 'btn-secondary'} pagination-btn" 
+                        data-page="${i}" 
+                        ${i === currentPage ? 'aria-current="page"' : ''}>
+                    ${i}
+                </button>
+            `;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<span style="color: var(--text-muted); padding: 0 8px;">...</span>`;
+            }
+            html += `<button class="btn btn-secondary pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+        
+        // Next button
+        html += `
+            <button class="btn btn-secondary pagination-btn" 
+                    data-page="${currentPage + 1}" 
+                    ${currentPage >= totalPages ? 'disabled' : ''}
+                    aria-label="Next page">
+                <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+            </button>
+        `;
+        
+        container.innerHTML = html;
+        lucide.createIcons();
+        
+        // Bind pagination buttons
+        container.querySelectorAll('.pagination-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = parseInt(btn.getAttribute('data-page'));
+                if (!isNaN(page) && page !== currentPage && page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    loadCMSData();
                 }
             });
         });
     }
 
-    // Submit Editor Form: POST or PUT requests
+    async function loadArticleForEdit(id) {
+        const article = allArticles.find(a => String(a.id) === String(id));
+        if (!article) return;
+
+        cmsArticleId.value = article.id;
+        cmsCategory.value = article.category;
+        cmsRegion.value = article.region || 'indian';
+        cmsSource.value = article.originalsource || '';
+        cmsHeadline.value = article.aiheadline;
+        cmsBiasAudit.value = article.biasaudit;
+        cmsSummary.value = article.aisummary;
+        if (cmsFullBlog) cmsFullBlog.value = article.fullblog || '';
+        cmsImageUrl.value = article.imageurl || '';
+        cmsOriginalUrl.value = article.originalurl || '';
+        
+        if (cmsPublishDate && article.publishdate) {
+            const d = new Date(article.publishdate);
+            const pad = n => String(n).padStart(2, '0');
+            cmsPublishDate.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        } else if (cmsPublishDate) {
+            cmsPublishDate.value = '';
+        }
+
+        cmsPreviewImg.src = article.imageurl || "./assets/hero-bg.png";
+        if (cmsImageUploadStatus) {
+            cmsImageUploadStatus.textContent = '';
+            cmsImageUploadStatus.className = 'file-upload-status';
+        }
+
+        cmsFormTitle.textContent = "Refine News Chronicle";
+        cmsFormSubtitle.textContent = "Refine satirical headlines, critical summaries or narrative bias audits.";
+        btnCmsSubmit.textContent = "Save Changes";
+        btnCmsReset.style.display = "inline-flex";
+        
+        document.querySelector('.cms-grid').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function deleteArticle(id) {
+        const article = allArticles.find(a => String(a.id) === String(id));
+        if (!article) return;
+
+        if (!confirm(`Scrub and erase "${article.aiheadline}" permanently from the database cache?`)) return;
+
+        try {
+            const res = await apiRequest(`/api/admin/articles/${id}`, { method: 'DELETE' });
+            
+            if (res.ok) {
+                showToast('Article deleted', 'success');
+                // Reload data to get updated pagination
+                await loadCMSData();
+                if (cmsArticleId.value === String(id)) cancelEditMode();
+            } else {
+                showToast('Failed to delete article', 'error');
+            }
+        } catch (err) {
+            console.error("Delete failed:", err);
+            if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
+        }
+    }
+
+    function cancelEditMode() {
+        if (cmsArticleForm) cmsArticleForm.reset();
+        if (cmsArticleId) cmsArticleId.value = '';
+        if (cmsFullBlog) cmsFullBlog.value = '';
+        if (cmsPublishDate) cmsPublishDate.value = '';
+        cmsPreviewImg.src = "./assets/hero-bg.png";
+        if (cmsImageUploadStatus) {
+            cmsImageUploadStatus.textContent = '';
+            cmsImageUploadStatus.className = 'file-upload-status';
+        }
+        cmsFormTitle.textContent = "Draft Custom Editorial";
+        cmsFormSubtitle.textContent = "Write an opinionated editorial that unshifts to the very front of the ledger.";
+        btnCmsSubmit.textContent = "Publish Editorial";
+        btnCmsReset.style.display = "none";
+    }
+
+    // ==========================================================================
+    // FORM SUBMISSIONS
+    // ==========================================================================
     if (cmsArticleForm) {
         cmsArticleForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            setLoading(btnCmsSubmit, true);
 
             const id = cmsArticleId.value;
             const payload = {
@@ -441,88 +686,80 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                let response;
-                if (id) {
-                    // Update: PUT request
-                    response = await fetch(`/api/admin/articles/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                } else {
-                    // Create: POST request
-                    response = await fetch('/api/admin/articles', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                }
+                const path = id ? `/api/admin/articles/${id}` : '/api/admin/articles';
+                const method = id ? 'PUT' : 'POST';
+                const res = await apiRequest(path, { method, body: JSON.stringify(payload) });
 
-                if (response.ok) {
-                    const savedArticle = await response.json();
-                    console.log("💾 Persisted changes successfully updated on server:", savedArticle);
-
-                    if (id) {
-                        // Locate and replace article in local state in-place (0ms update)
-                        const idx = allArticles.findIndex(a => String(a.id) === String(id));
-                        if (idx !== -1) {
-                            allArticles[idx] = { ...allArticles[idx], ...savedArticle };
-                        }
-                    } else {
-                        // Unshift custom human editorial at the front so it appears first
-                        allArticles.unshift(savedArticle);
-                    }
-
-                    // Return to clean form state
-                    cancelEditMode();
+                if (res.ok) {
+                    const saved = await res.json();
+                    showToast(id ? 'Article updated' : 'Article published', 'success');
                     
-                    // Re-render
+                    if (id) {
+                        const idx = allArticles.findIndex(a => String(a.id) === String(id));
+                        if (idx !== -1) allArticles[idx] = { ...allArticles[idx], ...saved };
+                    } else {
+                        allArticles.unshift(saved);
+                    }
+                    cancelEditMode();
                     updateStatsMetrics();
                     populateManagerList();
                 } else {
-                    alert("Failed to submit article details to database cache.");
+                    const err = await res.json();
+                    showToast(err.error || 'Failed to save article', 'error');
                 }
             } catch (err) {
-                console.error("CMS Form Submission Failed:", err);
-                alert("Cannot connect to honestlybiasedOfficial backend server.");
+                console.error("Submit failed:", err);
+                if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
+            } finally {
+                setLoading(btnCmsSubmit, false);
             }
         });
     }
 
-    function cancelEditMode() {
-        if (cmsArticleForm) cmsArticleForm.reset();
-        if (cmsArticleId) cmsArticleId.value = '';
-        if (cmsFullBlog) cmsFullBlog.value = '';
-        if (cmsPublishDate) cmsPublishDate.value = '';
-        
-        // Reset image preview
-        cmsPreviewImg.src = "./assets/hero-bg.png";
-        if (cmsImageUploadStatus) {
-            cmsImageUploadStatus.textContent = '';
-            cmsImageUploadStatus.className = 'file-upload-status';
-        }
-        
-        cmsFormTitle.textContent = "Draft Custom Editorial";
-        cmsFormSubtitle.textContent = "Write an opinionated editorial that unshifts to the very front of the ledger.";
-        btnCmsSubmit.textContent = "Publish Editorial";
-        btnCmsReset.style.display = "none";
-    }
+    if (btnCmsReset) btnCmsReset.addEventListener('click', cancelEditMode);
 
-    if (btnCmsReset) {
-        btnCmsReset.addEventListener('click', cancelEditMode);
-    }
+    // ==========================================================================
+    // HERO FORM
+    // ==========================================================================
+    if (heroForm) {
+        heroForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-hero-submit');
+            setLoading(btn, true);
 
-    // Real-time live inventory list search bar filter (0ms delay)
-    if (searchInput) {
-        searchInput.addEventListener('input', () => {
-            searchFilterQuery = searchInput.value;
-            populateManagerList();
+            const payload = {
+                updates: [{
+                    key: 'hero',
+                    value: {
+                        eyebrow: heroEyebrow.value,
+                        readtime: heroReadtime.value,
+                        headline: heroHeadline.value,
+                        body: heroBody.value,
+                        byline: heroByline.value,
+                        byline_role: heroBylineRole.value,
+                        cta: heroCta.value
+                    }
+                }]
+            };
+
+            try {
+                const res = await apiRequest('/api/admin/site-content', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast('Hero article updated', 'success');
+                    await loadHeroContent();
+                } else {
+                    showToast('Failed to save hero content', 'error');
+                }
+            } catch (err) {
+                if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
+            } finally {
+                setLoading(btn, false);
+            }
         });
     }
-
-    // ==========================================================================
-    // HERO ARTICLE CUSTOMIZER CONTROLLER
-    // ==========================================================================
 
     async function loadHeroContent() {
         if (!heroForm) return;
@@ -538,210 +775,174 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (heroByline) heroByline.value = hero.byline || '';
                 if (heroBylineRole) heroBylineRole.value = hero.byline_role || '';
                 if (heroCta) heroCta.value = hero.cta || '';
-                if (heroImageUrl && hero.imageurl) {
-                    heroImageUrl.value = hero.imageurl;
-                    heroPreviewImg.src = hero.imageurl;
-                }
             }
         } catch (e) {
             console.error("Failed to load hero content:", e);
         }
     }
 
-    if (heroForm) {
-        heroForm.addEventListener('submit', async (e) => {
+    // ==========================================================================
+    // HIGHLIGHTS FORM (NEW HANDLER)
+    // ==========================================================================
+    if (highlightsForm) {
+        highlightsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btnSubmit = document.getElementById('btn-hero-submit');
-            if (btnSubmit) btnSubmit.disabled = true;
+            setLoading(btnHighlightsSubmit, true);
 
-            const payload = {
-                updates: [
-                    {
-                        key: 'hero',
-                        value: {
-                            eyebrow: heroEyebrow.value,
-                            readtime: heroReadtime.value,
-                            headline: heroHeadline.value,
-                            body: heroBody.value,
-                            byline: heroByline.value,
-                            byline_role: heroBylineRole.value,
-                            cta: heroCta.value,
-                            imageurl: heroImageUrl.value || "./assets/hero-bg.png"
-                        }
-                    }
-                ]
-            };
+            const rawText = highlightsInput.value;
+            const highlightsArray = rawText.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+
+            if (highlightsArray.length === 0) {
+                showToast('Please enter at least one highlight', 'error');
+                setLoading(btnHighlightsSubmit, false);
+                return;
+            }
 
             try {
-                const response = await fetch('/api/admin/site-content', {
+                const res = await apiRequest('/api/admin/highlights', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ highlights: highlightsArray })
                 });
-                if (response.ok) {
-                    alert("Hero article successfully updated!");
-                    await loadHeroContent();
+                if (res.ok) {
+                    showToast('Highlights saved', 'success');
+                    await loadHighlightsConfig();
                 } else {
-                    alert("Failed to save hero content updates.");
+                    showToast('Failed to save highlights', 'error');
                 }
             } catch (err) {
-                console.error("Failed to save hero changes:", err);
-                alert("Cannot connect to server.");
+                if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
             } finally {
-                if (btnSubmit) btnSubmit.disabled = false;
+                setLoading(btnHighlightsSubmit, false);
             }
         });
     }
 
-    loadHeroContent();
+    async function loadHighlightsConfig() {
+        try {
+            const res = await fetch('/api/admin/highlights');
+            if (res.ok) {
+                const highlights = await res.json();
+                if (highlightsInput) highlightsInput.value = highlights.join('\n');
+            }
+        } catch (error) {
+            console.error("Failed to load highlights:", error);
+        }
+    }
 
     // ==========================================================================
-    // INSTAGRAM INTEGRATION CONTROLLERS
+    // INSTAGRAM AUTOMATION
     // ==========================================================================
-    const igHandleInput = document.getElementById('ig-handle-input');
-    const igRssInput = document.getElementById('ig-rss-input');
-    const btnIgConnect = document.getElementById('btn-ig-connect');
-    const btnIgSync = document.getElementById('btn-ig-sync');
-    const btnIgSimulate = document.getElementById('btn-ig-simulate');
-    const igStatusBadge = document.getElementById('ig-status-badge');
-    const igAutomationLog = document.getElementById('ig-automation-log');
-    
     let isConnected = false;
     let currentLogsLength = 0;
 
     async function loadInstagramConfig() {
         try {
-            const response = await fetch('/api/admin/instagram/config');
-            if (response.ok) {
-                const data = await response.json();
+            const res = await fetch('/api/admin/instagram/config');
+            if (res.ok) {
+                const data = await res.json();
                 const config = data.config || {};
                 const logs = data.logs || [];
-                
-                isConnected = config.connected;
-                
-                // Update UI state based on connection
-                if (isConnected) {
-                    igStatusBadge.textContent = 'Active Polling';
-                    igStatusBadge.style.border = '1px solid rgba(0, 230, 118, 0.4)';
-                    igStatusBadge.style.color = '#00e676';
-                    igStatusBadge.style.background = 'rgba(0, 230, 118, 0.05)';
-                    
-                    igHandleInput.value = config.handle;
-                    igHandleInput.disabled = true;
-                    if (igRssInput) {
-                        igRssInput.value = config.rssUrl || '';
-                        igRssInput.disabled = true;
-                    }
-                    btnIgConnect.textContent = 'Disconnect';
-                    btnIgConnect.style.borderColor = 'rgba(178, 41, 46, 0.4)';
-                    btnIgConnect.style.color = 'var(--accent-saffron)';
-                    btnIgConnect.style.background = 'rgba(178, 41, 46, 0.05)';
-                    
-                    btnIgSimulate.disabled = false;
-                    if (btnIgSync) btnIgSync.style.display = 'inline-block';
-                } else {
-                    igStatusBadge.textContent = 'Disconnected';
-                    igStatusBadge.style.border = '1px solid rgba(255,255,255,0.1)';
-                    igStatusBadge.style.color = 'var(--text-muted)';
-                    igStatusBadge.style.background = 'rgba(255,255,255,0.02)';
-                    
-                    igHandleInput.disabled = false;
-                    if (igRssInput) {
-                        igRssInput.disabled = false;
-                        igRssInput.value = config.rssUrl || '';
-                    }
-                    btnIgConnect.textContent = 'Connect';
-                    btnIgConnect.style.borderColor = 'var(--border-color)';
-                    btnIgConnect.style.color = 'var(--text-primary)';
-                    btnIgConnect.style.background = 'rgba(255, 255, 255, 0.02)';
-                    
-                    btnIgSimulate.disabled = true;
-                    if (btnIgSync) btnIgSync.style.display = 'none';
-                }
 
-                // Render Logs
+                isConnected = config.connected;
+                updateIgUI(config);
                 if (logs.length !== currentLogsLength) {
                     currentLogsLength = logs.length;
-                    igAutomationLog.textContent = logs.join('\n');
-                    igAutomationLog.scrollTop = igAutomationLog.scrollHeight;
+                    if (igAutomationLog) {
+                        igAutomationLog.textContent = logs.join('\n');
+                        igAutomationLog.scrollTop = igAutomationLog.scrollHeight;
+                    }
                 }
             }
         } catch (error) {
-            console.error("Failed to load Instagram configuration:", error);
+            console.error("Failed to load Instagram config:", error);
+        }
+    }
+
+    function updateIgUI(config) {
+        if (!igStatusBadge) return;
+        if (isConnected) {
+            igStatusBadge.textContent = 'Active Polling';
+            igStatusBadge.style.cssText = 'border: 1px solid rgba(0, 230, 118, 0.4); color: #00e676; background: rgba(0, 230, 118, 0.05);';
+            if (igHandleInput) { igHandleInput.value = config.handle || ''; igHandleInput.disabled = true; }
+            if (igRssInput) { igRssInput.value = config.rssUrl || ''; igRssInput.disabled = true; }
+            if (btnIgConnect) {
+                btnIgConnect.textContent = 'Disconnect';
+                btnIgConnect.style.cssText = 'border-color: rgba(178, 41, 46, 0.4); color: var(--accent-saffron); background: rgba(178, 41, 46, 0.05);';
+            }
+            if (btnIgSimulate) btnIgSimulate.disabled = false;
+            if (btnIgSync) btnIgSync.style.display = 'inline-block';
+        } else {
+            igStatusBadge.textContent = 'Disconnected';
+            igStatusBadge.style.cssText = 'border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); background: rgba(255,255,255,0.02);';
+            if (igHandleInput) { igHandleInput.value = ''; igHandleInput.disabled = false; }
+            if (igRssInput) { igRssInput.disabled = false; igRssInput.value = config.rssUrl || ''; }
+            if (btnIgConnect) {
+                btnIgConnect.textContent = 'Connect';
+                btnIgConnect.style.cssText = 'border-color: var(--border-color); color: var(--text-primary); background: rgba(255, 255, 255, 0.02);';
+            }
+            if (btnIgSimulate) btnIgSimulate.disabled = true;
+            if (btnIgSync) btnIgSync.style.display = 'none';
         }
     }
 
     if (btnIgConnect) {
         btnIgConnect.addEventListener('click', async () => {
-            let handle = igHandleInput.value.trim();
+            let handle = igHandleInput?.value?.trim() || '';
             if (!isConnected && !handle) {
-                alert("Please enter a valid Instagram handle to connect.");
+                showToast('Enter an Instagram handle', 'error');
                 return;
             }
-
             if (!isConnected && !handle.startsWith('@')) {
                 handle = '@' + handle;
-                igHandleInput.value = handle;
+                if (igHandleInput) igHandleInput.value = handle;
             }
+            const rssUrl = igRssInput?.value?.trim() || '';
+            const payload = { handle: isConnected ? '' : handle, rssUrl: isConnected ? '' : rssUrl, connected: !isConnected };
 
-            const rssUrl = igRssInput ? igRssInput.value.trim() : '';
-
-            const payload = {
-                handle: isConnected ? '' : handle,
-                rssUrl: isConnected ? '' : rssUrl,
-                connected: !isConnected
-            };
-
-            btnIgConnect.disabled = true;
+            setLoading(btnIgConnect, true);
             try {
-                const response = await fetch('/api/admin/instagram/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (response.ok) {
+                const res = await apiRequest('/api/admin/instagram/config', { method: 'POST', body: JSON.stringify(payload) });
+                if (res.ok) {
                     if (!isConnected) {
-                        igHandleInput.value = handle;
+                        if (igHandleInput) igHandleInput.value = handle;
                         if (igRssInput) igRssInput.value = rssUrl;
                     } else {
-                        igHandleInput.value = '';
+                        if (igHandleInput) igHandleInput.value = '';
                         if (igRssInput) igRssInput.value = '';
                     }
                     await loadInstagramConfig();
+                    showToast(isConnected ? 'Disconnected' : 'Connected', 'success');
                 } else {
-                    alert("Failed to update Instagram connection state.");
+                    showToast('Failed to update Instagram config', 'error');
                 }
             } catch (err) {
-                console.error("Instagram config save failed:", err);
-                alert("Cannot connect to server.");
+                if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
             } finally {
-                btnIgConnect.disabled = false;
+                setLoading(btnIgConnect, false);
             }
         });
     }
 
     if (btnIgSync) {
         btnIgSync.addEventListener('click', async () => {
-            btnIgSync.disabled = true;
-            btnIgSync.textContent = 'Syncing...';
+            setLoading(btnIgSync, true);
             try {
-                const response = await fetch('/api/admin/instagram/sync', {
-                    method: 'POST'
-                });
-                if (response.ok) {
-                    const result = await response.json();
-                    alert(result.message || "Instagram sync executed.");
+                const res = await apiRequest('/api/admin/instagram/sync', { method: 'POST' });
+                if (res.ok) {
+                    const result = await res.json();
+                    showToast(result.message || 'Sync executed', 'success');
                     await loadInstagramConfig();
+                    await loadCMSData();
                 } else {
-                    const err = await response.json();
-                    alert(err.error || "Failed to sync Instagram feed.");
+                    const err = await res.json();
+                    showToast(err.error || 'Sync failed', 'error');
                 }
             } catch (err) {
-                console.error("Instagram sync request failed:", err);
-                alert("Cannot connect to server.");
+                if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
             } finally {
-                btnIgSync.disabled = false;
-                btnIgSync.textContent = 'Sync Now';
+                setLoading(btnIgSync, false);
             }
         });
     }
@@ -753,149 +954,67 @@ document.addEventListener('DOMContentLoaded', () => {
         "Ministry of Digital Coordination launches a new digital dashboard to track the progress of other digital dashboards.",
         "Legacy prime-time newsroom holds a 1-hour panel debate on whether social media comedy reels are destroying journalistic objectivity."
     ];
-
-    const mockShortcodes = [
-        "CP84tADtE4g",
-        "C-19t_5uF6n",
-        "C5y2G42t7gB",
-        "C844oV6t9gA",
-        "C9-y4x2t1a8"
-    ];
+    const mockShortcodes = ["CP84tADtE4g", "C-19t_5uF6n", "C5y2G42t7gB", "C844oV6t9gA", "C9-y4x2t1a8"];
 
     if (btnIgSimulate) {
         btnIgSimulate.addEventListener('click', async () => {
-            btnIgSimulate.disabled = true;
-            
-            const randomIdx = Math.floor(Math.random() * mockCaptions.length);
-            const shortcode = mockShortcodes[randomIdx];
-            const caption = mockCaptions[randomIdx];
-            
+            setLoading(btnIgSimulate, true);
+            const idx = Math.floor(Math.random() * mockCaptions.length);
             const payload = {
                 mediaId: `ig_reel_${Date.now()}`,
-                shortcode: shortcode,
-                permalink: `https://www.instagram.com/p/${shortcode}/`,
-                caption: caption
+                shortcode: mockShortcodes[idx],
+                permalink: `https://www.instagram.com/p/${mockShortcodes[idx]}/`,
+                caption: mockCaptions[idx]
             };
 
-            igAutomationLog.textContent += `\n[Simulating Post Event] Sending webhook trigger for reel ${shortcode}...`;
-            igAutomationLog.scrollTop = igAutomationLog.scrollHeight;
+            if (igAutomationLog) {
+                igAutomationLog.textContent += `\n[Simulating Post Event] Sending webhook for reel ${mockShortcodes[idx]}...`;
+                igAutomationLog.scrollTop = igAutomationLog.scrollHeight;
+            }
 
             try {
-                const response = await fetch('/api/instagram/webhook', {
+                const res = await apiRequest('/api/admin/instagram/simulate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
-                if (response.ok) {
-                    // Instantly reload articles database cache
+                if (res.ok) {
+                    showToast('Simulation triggered', 'success');
                     await loadCMSData();
                     await loadInstagramConfig();
                 } else {
-                    const errData = await response.json();
-                    alert(`Simulation failed: ${errData.error || 'Server error'}`);
+                    showToast('Simulation failed', 'error');
                 }
             } catch (err) {
-                console.error("Simulation failed:", err);
-                alert("Cannot connect to server.");
+                if (err.message !== 'Unauthorized') showToast('Cannot connect to server', 'error');
             } finally {
-                btnIgSimulate.disabled = false;
+                setLoading(btnIgSimulate, false);
             }
         });
     }
 
-    // Live logging polling (stream logs every 3 seconds)
+    // Poll logs every 3s
     setInterval(loadInstagramConfig, 3000);
     loadInstagramConfig();
 
     // ==========================================================================
-    // TICKER HIGHLIGHTS EDITOR CONTROLLER
-    // ==========================================================================
-    const cmsHighlightsForm = document.getElementById('cms-highlights-form');
-    const cmsHighlightsInput = document.getElementById('cms-highlights-input');
-    const btnHighlightsSubmit = document.getElementById('btn-highlights-submit');
-
-    async function loadHighlightsConfig() {
-        try {
-            const response = await fetch('/api/admin/highlights');
-            if (response.ok) {
-                const highlights = await response.json();
-                if (cmsHighlightsInput) {
-                    cmsHighlightsInput.value = highlights.join('\n');
-                }
-            }
-        } catch (error) {
-            console.error("Failed to load ticker highlights:", error);
-        }
-    }
-
-    if (cmsHighlightsForm) {
-        cmsHighlightsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const rawText = cmsHighlightsInput.value;
-            const highlightsArray = rawText.split('\n')
-                .map(line => line.trim())
-                .filter(line => line.length > 0);
-
-            if (highlightsArray.length === 0) {
-                alert("Please enter at least one highlight headline.");
-                return;
-            }
-
-            if (btnHighlightsSubmit) btnHighlightsSubmit.disabled = true;
-
-            try {
-                const response = await fetch('/api/admin/highlights', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ highlights: highlightsArray })
-                });
-
-                if (response.ok) {
-                    alert("Ticker highlights successfully updated!");
-                    await loadHighlightsConfig();
-                } else {
-                    alert("Failed to save ticker highlights.");
-                }
-            } catch (err) {
-                console.error("Failed to save highlights:", err);
-                alert("Cannot connect to server.");
-            } finally {
-                if (btnHighlightsSubmit) btnHighlightsSubmit.disabled = false;
-            }
-        });
-    }
-
-    loadHighlightsConfig();
-
-    // ==========================================================================
-    // AUDIENCE DIRECTORY CONTROLLER
+    // AUDIENCE DIRECTORY
     // ==========================================================================
     async function loadSubscribers() {
         if (!subscribersList) return;
         try {
-            const response = await fetch('/api/admin/subscribers');
-            if (response.ok) {
-                const subscribers = await response.json();
-                
-                // Update badge count
-                if (subCountBadge) {
-                    subCountBadge.textContent = `${subscribers.length} ${subscribers.length === 1 ? 'Subscriber' : 'Subscribers'}`;
-                }
-
-                // Render list
-                if (subscribers.length === 0) {
-                    subscribersList.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding-top: 50px;">No subscribers loaded.</div>`;
+            const res = await fetch('/api/admin/subscribers');
+            if (res.ok) {
+                const subs = await res.json();
+                if (subCountBadge) subCountBadge.textContent = `${subs.length} ${subs.length === 1 ? 'Subscriber' : 'Subscribers'}`;
+                if (subs.length === 0) {
+                    subscribersList.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding-top: 50px;">No subscribers loaded.</div>';
                 } else {
-                    subscribersList.innerHTML = subscribers.map(sub => {
+                    subscribersList.innerHTML = subs.map(sub => {
                         const localDate = new Date(sub.subscribedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' });
-                        return `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1.5px solid rgba(255, 255, 255, 0.02); font-size: 0.8rem;">
-                                <span style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 60%;">${sub.email}</span>
-                                <span style="color: var(--text-muted); font-size: 0.7rem;">${localDate}</span>
-                            </div>
-                        `;
+                        return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1.5px solid rgba(255,255,255,0.02); font-size: 0.8rem;">
+                            <span style="color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 60%;">${escapeHtml(sub.email)}</span>
+                            <span style="color: var(--text-muted); font-size: 0.7rem;">${localDate}</span>
+                        </div>`;
                     }).join('');
                 }
             }
@@ -906,15 +1025,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnExportSubscribers) {
         btnExportSubscribers.addEventListener('click', () => {
-            // Simply open the export route in a new tab or window, which triggers file download
             window.open('/api/admin/subscribers/export', '_blank');
         });
     }
 
-    // Load subscribers initial load and poll every 10 seconds
     loadSubscribers();
     setInterval(loadSubscribers, 10000);
 
-    // Initialize CMS data loading
-    loadCMSData();
+    // ==========================================================================
+    // SEARCH
+    // ==========================================================================
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            searchFilterQuery = searchInput.value;
+            currentPage = 1; // Reset to first page on search
+            loadCMSData(); // Use server-side search
+        });
+    }
+
+    // ==========================================================================
+    // SORT CONTROLS
+    // ==========================================================================
+    if (sortBySelect) {
+        sortBySelect.value = currentSortBy;
+        sortBySelect.addEventListener('change', () => {
+            currentSortBy = sortBySelect.value;
+            currentPage = 1;
+            loadCMSData();
+        });
+    }
+
+    if (sortOrderSelect) {
+        sortOrderSelect.value = currentSortOrder;
+        sortOrderSelect.addEventListener('change', () => {
+            currentSortOrder = sortOrderSelect.value;
+            currentPage = 1;
+            loadCMSData();
+        });
+    }
+
+    // ==========================================================================
+    // INIT
+    // ==========================================================================
+    (async function init() {
+        await fetchCsrfToken();
+        await loadHeroContent();
+        await loadHighlightsConfig();
+        await loadCMSData();
+        lucide.createIcons();
+    })();
 });

@@ -259,6 +259,12 @@ function classifyRegion(title, description, rawContent, sourceName, urlText) {
         "king charles", "queen elizabeth", "heathrow", "gatwick", "manchester", "birmingham", "leeds", "glasgow", "edinburgh", "cardiff", "belfast"
     ];
 
+    // Berkshire Local indicators
+    const berkshireKeywords = [
+        "berkshire", "reading", "slough", "maidenhead", "windsor", "newbury", "bracknell", "wokingham", "earley", "woodley", "twenty", "crowthorne", "sandhurst",
+        "thames valley", "m4 corridor", "royal borough", "legoland", "microsoft reading", "oracle reading", "berkshire county", "west berkshire"
+    ];
+
     let indiaCount = 0;
     indiaKeywords.forEach(kw => {
         const regex = new RegExp("\\b" + kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\b", "g");
@@ -273,7 +279,17 @@ function classifyRegion(title, description, rawContent, sourceName, urlText) {
         if (matches) ukCount += matches.length;
     });
 
+    let berkshireCount = 0;
+    berkshireKeywords.forEach(kw => {
+        const regex = new RegExp("\\b" + kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\b", "g");
+        const matches = combinedText.match(regex);
+        if (matches) berkshireCount += matches.length;
+    });
+
     // Domain and source specific weights
+    if (urlStr.includes(".in/") || urlStr.endsWith(".in") || urlStr.includes(".co.in")) indiaCount += 5;
+    if (urlStr.includes(".co.uk") || urlStr.includes(".org.uk") || urlStr.includes(".gov.uk") || urlStr.includes("bbc.co.uk")) ukCount += 5;
+    if (urlStr.includes("berkshire") || urlStr.includes("reading") || urlStr.includes("windsor")) berkshireCount += 5;
     if (urlStr.includes(".in/") || urlStr.endsWith(".in") || urlStr.includes(".co.in")) indiaCount += 5;
     if (urlStr.includes(".co.uk") || urlStr.includes(".org.uk") || urlStr.includes(".gov.uk") || urlStr.includes("bbc.co.uk")) ukCount += 5;
 
@@ -288,10 +304,17 @@ function classifyRegion(title, description, rawContent, sourceName, urlText) {
         if (srcNameText.includes(src) || urlStr.includes(src.replace(/\s+/g, ""))) ukCount += 3;
     });
 
-    if (indiaCount > 0 && indiaCount >= ukCount) {
+    const berkshireSources = ["reading chronicle", "berkshire live", "getreading", "windsor express", "newbury today", "the bracknell news", "wokingham paper"];
+    berkshireSources.forEach(src => {
+        if (srcNameText.includes(src) || urlStr.includes(src.replace(/\s+/g, ""))) berkshireCount += 3;
+    });
+
+    if (indiaCount > 0 && indiaCount >= ukCount && indiaCount >= berkshireCount) {
         return "indian";
-    } else if (ukCount > 0 && ukCount > indiaCount) {
+    } else if (ukCount > 0 && ukCount > indiaCount && ukCount >= berkshireCount) {
         return "uk";
+    } else if (berkshireCount > 0 && berkshireCount > indiaCount && berkshireCount > ukCount) {
+        return "berkshire";
     } else {
         return "world";
     }
