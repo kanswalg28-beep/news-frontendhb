@@ -668,83 +668,74 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeArticleModal();
-        }
-    });
+                    }
+                });
 
-    // Track active date filter option: 'today' (default), 'yesterday', 'all', or a specific YYYY-MM-DD string
-    let activeDateFilter = 'today';
+                // Pagination state
+                let currentPage = 1;
+                let itemsPerPage = 24;
+                let totalPages = 1;
 
-    // Dynamic Asymmetrical Bento Grid compiler
-    function renderArticles(regionFilter, categoryFilter) {
-        if (!gridContainer) return;
+                // Dynamic Asymmetrical Bento Grid compiler
+                function renderArticles(regionFilter, categoryFilter) {
+            if (!gridContainer) return;
 
-        // Clear existing grid
-        gridContainer.innerHTML = "";
+            // Clear existing grid
+            gridContainer.innerHTML = "";
 
-        // 1. Sort all articles newest-first by publishdate or ID
-        const sortedArticles = [...allArticles].sort((a, b) => {
-            const timeA = a.publishdate ? new Date(a.publishdate).getTime() : parseFloat(String(a.id).replace(/\D/g, '')) || 0;
-            const timeB = b.publishdate ? new Date(b.publishdate).getTime() : parseFloat(String(b.id).replace(/\D/g, '')) || 0;
-            return timeB - timeA;
-        });
+            // 1. Sort all articles newest-first by publishdate or ID
+            const sortedArticles = [...allArticles].sort((a, b) => {
+                const timeA = a.publishdate ? new Date(a.publishdate).getTime() : parseFloat(String(a.id).replace(/\D/g, '')) || 0;
+                const timeB = b.publishdate ? new Date(b.publishdate).getTime() : parseFloat(String(b.id).replace(/\D/g, '')) || 0;
+                return timeB - timeA;
+            });
 
-        // 2. Filter articles by region, category and date
-        const filteredArticles = sortedArticles.filter(art => {
-            const matchRegion = (art.region || 'indian').toLowerCase().trim() === regionFilter.toLowerCase().trim();
-            const matchCategory = categoryFilter === 'all' 
-                ? true 
-                : art.category.toLowerCase().trim() === categoryFilter.toLowerCase().trim();
-            
-            if (!matchRegion || !matchCategory) return false;
+            // 2. Filter articles by region and category
+            const filteredArticles = sortedArticles.filter(art => {
+                const matchRegion = (art.region || 'indian').toLowerCase().trim() === regionFilter.toLowerCase().trim();
+                const matchCategory = categoryFilter === 'all'
+                    ? true
+                    : art.category.toLowerCase().trim() === categoryFilter.toLowerCase().trim();
 
-            // Date filtering rules:
-            const artDate = art.publishdate ? new Date(art.publishdate) : new Date();
-            const today = new Date();
-            const yesterday = new Date();
-            yesterday.setDate(today.getDate() - 1);
-
-            const isSameDate = (d1, d2) => 
-                d1.getFullYear() === d2.getFullYear() && 
-                d1.getMonth() === d2.getMonth() && 
-                d1.getDate() === d2.getDate();
-
-            if (activeDateFilter === 'today') {
-                return isSameDate(artDate, today);
-            } else if (activeDateFilter === 'yesterday') {
-                return isSameDate(artDate, yesterday);
-            } else if (activeDateFilter === 'all') {
+                if (!matchRegion || !matchCategory) return false;
                 return true;
-            } else {
-                // Specific YYYY-MM-DD custom filter
-                const [y, m, d] = activeDateFilter.split('-').map(Number);
-                const filterD = new Date(y, m - 1, d);
-                return isSameDate(artDate, filterD);
+            });
+
+            // 3. Pagination
+            totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+        
+            const startIdx = (currentPage - 1) * itemsPerPage;
+            const endIdx = startIdx + itemsPerPage;
+            const paginatedArticles = filteredArticles.slice(startIdx, endIdx);
+
+            console.log(`🎯 Filtering: Region "${regionFilter}", Category "${categoryFilter}", Page ${currentPage}/${totalPages} (${itemsPerPage} per page) matched ${filteredArticles.length} articles, showing ${paginatedArticles.length}.`);
+
+            // Update pagination UI
+            updatePaginationUI();
+
+            if (paginatedArticles.length === 0) {
+                // Display empty state
+                gridContainer.innerHTML = `
+                    <div class="bento-card bento-span-4x1 glass-element" style="grid-column: span 4; padding: 48px; text-align: center; justify-content: center; align-items: center; border-style: dashed; grid-row: span 1;">
+                        <i data-lucide="archive-x" style="width: 48px; height: 48px; color: var(--accent-saffron); margin-bottom: 16px;"></i>
+                        <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">No Chronicles Found</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto;">Our AI Editorial desk hasn't logged any audited headlines under "${categoryFilter}" in this region. Check back shortly!</p>
+                    </div>
+                `;
+                // Append persistent widgets anyway only if category filter is 'all'
+                if (categoryFilter === 'all') {
+                    gridContainer.innerHTML += rhetoricMeterHTML + manifestoHTML + expressBiasHTML + podcastHTML + VaranasiDocHTML + civicPollHTML;
+                }
+                lucide.createIcons();
+                return;
             }
-        });
 
-        console.log(`🎯 Filtering: Region "${regionFilter}", Category "${categoryFilter}", Date "${activeDateFilter}" matched ${filteredArticles.length} articles.`);
+            // Build list of final DOM nodes/strings dynamically to interlace widgets
+            const gridItems = [];
 
-        if (filteredArticles.length === 0) {
-            // Display empty state
-            gridContainer.innerHTML = `
-                <div class="bento-card bento-span-4x1 glass-element" style="grid-column: span 4; padding: 48px; text-align: center; justify-content: center; align-items: center; border-style: dashed; grid-row: span 1;">
-                    <i data-lucide="archive-x" style="width: 48px; height: 48px; color: var(--accent-saffron); margin-bottom: 16px;"></i>
-                    <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">No Chronicles Found</h3>
-                    <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto;">Our AI Editorial desk hasn't logged any audited headlines under "${categoryFilter}" in this region. Check back shortly!</p>
-                </div>
-            `;
-            // Append persistent widgets anyway only if category filter is 'all'
-            if (categoryFilter === 'all') {
-                gridContainer.innerHTML += rhetoricMeterHTML + manifestoHTML + expressBiasHTML + podcastHTML + VaranasiDocHTML + civicPollHTML;
-            }
-            lucide.createIcons();
-            return;
-        }
-
-        // Build list of final DOM nodes/strings dynamically to interlace widgets
-        const gridItems = [];
-
-        filteredArticles.forEach((article, index) => {
+            paginatedArticles.forEach((article, index) => {
             if (index === 0) {
                 // Render the first article as a large high-fidelity cover visual bento (span 2x2)
                 gridItems.push(`
@@ -1440,66 +1431,61 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Set up Date Filter button triggers
-    const todayBtn = document.getElementById('filter-today');
-    const yesterdayBtn = document.getElementById('filter-yesterday');
-    const allDatesBtn = document.getElementById('filter-all-dates');
-    const customDateInput = document.getElementById('filter-custom-date');
-
-    function updateDateFilterUI(activeBtn) {
-        [todayBtn, yesterdayBtn, allDatesBtn].forEach(btn => {
-            if (btn) {
-                btn.classList.remove('active');
-                btn.style.background = 'transparent';
-                btn.style.borderColor = 'transparent';
-                btn.style.color = 'var(--text-muted)';
-            }
-        });
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-            activeBtn.style.background = 'rgba(255,255,255,0.03)';
-            activeBtn.style.borderColor = 'var(--border-color)';
-            activeBtn.style.color = 'var(--text-primary)';
+    // Pagination UI update function
+    function updatePaginationUI() {
+        const pageIndicator = document.getElementById('page-indicator');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        
+        if (pageIndicator) {
+            pageIndicator.textContent = `${currentPage} / ${totalPages}`;
+        }
+        
+        if (prevBtn) {
+            prevBtn.disabled = currentPage <= 1;
+            prevBtn.style.opacity = currentPage <= 1 ? '0.4' : '1';
+            prevBtn.style.cursor = currentPage <= 1 ? 'not-allowed' : 'pointer';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = currentPage >= totalPages;
+            nextBtn.style.opacity = currentPage >= totalPages ? '0.4' : '1';
+            nextBtn.style.cursor = currentPage >= totalPages ? 'not-allowed' : 'pointer';
         }
     }
 
-    if (todayBtn) {
-        todayBtn.addEventListener('click', () => {
-            activeDateFilter = 'today';
-            updateDateFilterUI(todayBtn);
-            if (customDateInput) customDateInput.value = '';
+    // Pagination event listeners
+    const perPageSelect = document.getElementById('per-page-select');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    
+    if (perPageSelect) {
+        perPageSelect.addEventListener('change', () => {
+            itemsPerPage = parseInt(perPageSelect.value);
+            currentPage = 1; // Reset to first page
             const route = parseHashRoute() || { region: 'indian', category: 'all' };
             renderArticles(route.region, route.category);
         });
     }
-
-    if (yesterdayBtn) {
-        yesterdayBtn.addEventListener('click', () => {
-            activeDateFilter = 'yesterday';
-            updateDateFilterUI(yesterdayBtn);
-            if (customDateInput) customDateInput.value = '';
-            const route = parseHashRoute() || { region: 'indian', category: 'all' };
-            renderArticles(route.region, route.category);
-        });
-    }
-
-    if (allDatesBtn) {
-        allDatesBtn.addEventListener('click', () => {
-            activeDateFilter = 'all';
-            updateDateFilterUI(allDatesBtn);
-            if (customDateInput) customDateInput.value = '';
-            const route = parseHashRoute() || { region: 'indian', category: 'all' };
-            renderArticles(route.region, route.category);
-        });
-    }
-
-    if (customDateInput) {
-        customDateInput.addEventListener('change', () => {
-            if (customDateInput.value) {
-                activeDateFilter = customDateInput.value; // YYYY-MM-DD format matches input.value
-                updateDateFilterUI(null); // Deselect preset buttons
+    
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
                 const route = parseHashRoute() || { region: 'indian', category: 'all' };
                 renderArticles(route.region, route.category);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+    
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                const route = parseHashRoute() || { region: 'indian', category: 'all' };
+                renderArticles(route.region, route.category);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
     }

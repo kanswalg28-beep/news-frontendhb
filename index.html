@@ -273,13 +273,18 @@
             <!-- Premium Date Filter Row -->
             <div class="date-filters-container glass-element" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; width: 100%; max-width: 1400px; margin-left: auto; margin-right: auto;">
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <button class="date-filter-btn active" id="filter-today">Today</button>
-                    <button class="date-filter-btn" id="filter-yesterday">Yesterday</button>
-                    <button class="date-filter-btn" id="filter-all-dates">All Archives</button>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Show:</span>
+                    <select id="per-page-select" style="padding: 8px 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; font-size: 0.8rem;">
+                        <option value="12">12 per page</option>
+                        <option value="24" selected>24 per page</option>
+                        <option value="48">48 per page</option>
+                    </select>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Custom Date:</span>
-                    <input type="date" id="filter-custom-date" style="color-scheme: dark;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Page:</span>
+                    <button class="pagination-btn" id="prev-page" aria-label="Previous page"><i data-lucide="chevron-left"></i></button>
+                    <span id="page-indicator" style="min-width: 60px; text-align: center; font-weight: 600;">1 / 1</span>
+                    <button class="pagination-btn" id="next-page" aria-label="Next page"><i data-lucide="chevron-right"></i></button>
                 </div>
             </div>
 
