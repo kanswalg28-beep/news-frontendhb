@@ -436,17 +436,8 @@ document.addEventListener('DOMContentLoaded', () => {
             subtitle: "Auditing health systems, pharmaceutical lobbying, public welfare, and medical narratives"
         }
     };
-    let rhetoricMeterHTML = "";
-    let expressBiasHTML = "";
 
     const gridContainer = document.getElementById('dynamic-bento-grid');
-
-    // Capture the static layout fixtures on initial load to preserve premium styles
-    const card2 = document.getElementById('card-2');
-    const card4 = document.getElementById('card-4');
-
-    rhetoricMeterHTML = card2 ? card2.outerHTML : "";
-    expressBiasHTML = card4 ? card4.outerHTML : "";
 
     async function loadDynamicArticles() {
         console.log("📡 Fetching site_content blocks first, then live feed...");
@@ -493,25 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Repeat the first item to ensure a seamless infinite CSS scrolling loop
                     html += `<span>• ${highlightsToRender[0]}</span>`;
                     tickerTrack.innerHTML = html;
-                }
-            }
-
-            // A. Update the Rhetoric/Sentiment Tracker in our captured HTML cache
-            if (data.rhetoricMeter && rhetoricMeterHTML) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = rhetoricMeterHTML;
-                const rhetoricCard = tempDiv.firstElementChild;
-                if (rhetoricCard) {
-                    const metricVals = rhetoricCard.querySelectorAll('.metric-val');
-                    if (metricVals.length >= 2) {
-                        metricVals[0].textContent = data.rhetoricMeter.hyperbolePercentage;
-                        metricVals[1].textContent = data.rhetoricMeter.yoyGrowth;
-                    }
-                    const summary = rhetoricCard.querySelector('.card-summary');
-                    if (summary) {
-                        summary.textContent = data.rhetoricMeter.aiAnalysis;
-                    }
-                    rhetoricMeterHTML = rhetoricCard.outerHTML;
                 }
             }
 
@@ -712,10 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto;">Our AI Editorial desk hasn't logged any audited headlines under "${categoryFilter}" in this region. Check back shortly!</p>
                     </div>
                 `;
-                // Append persistent widgets anyway only if category filter is 'all'
-                if (categoryFilter === 'all') {
-                    gridContainer.innerHTML += rhetoricMeterHTML + expressBiasHTML;
-                }
                 lucide.createIcons();
                 return;
             }
@@ -814,11 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Interlace our layout fixtures dynamically based on the category filter
         // If showing 'all', we interlace at perfect visual intervals.
         if (categoryFilter === 'all') {
-            if (gridItems.length > 1) gridItems.splice(1, 0, rhetoricMeterHTML);
-            if (gridItems.length > 4) gridItems.splice(4, 0, expressBiasHTML);
-            
-            // Append any leftovers
-            if (gridItems.length <= 1) gridItems.push(rhetoricMeterHTML, expressBiasHTML);
+            // No static widgets to interlace - only paginated articles
         } else {
             // "each tab should have its own space" - do not append global widgets to category-specific views!
         }
