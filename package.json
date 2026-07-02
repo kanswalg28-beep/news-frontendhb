@@ -3,8 +3,6 @@
     "node": "24.x"
   },
   "scripts": {
-    "start": "node mock-server.js",
-    "dev": "node mock-server.js",
     "build:sitemap": "node generate-sitemap.js",
     "build:images": "node generate-images.js",
     "build": "npm run build:images && npm run build:sitemap"
